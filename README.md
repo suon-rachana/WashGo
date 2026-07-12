@@ -1,19 +1,19 @@
-# 🧺 WashGo
+# WashGo
 
-> **Premium On-Demand Laundry Pickup & Delivery Platform**
+A premium on-demand laundry pickup and delivery platform built with React Native and Expo.
 
-WashGo is a premium mobile application that connects customers, laundry businesses, and delivery riders through a fast, convenient, and reliable on-demand laundry pickup and delivery service.
+WashGo connects customers with nearby laundry partners, allowing them to schedule pickups, select laundry services, track orders in real time, manage addresses and payment methods, and receive status updates through a modern mobile experience.
 
-Developed as a university thesis project, WashGo aims to modernize traditional laundry services in **Siem Reap, Cambodia** through a clean, user-friendly, and scalable mobile experience.
+The project is being developed as a university thesis focusing on digital transformation for laundry services in Siem Reap, Cambodia.
 
 ---
 
-## ✨ Features
+# Features
 
-### 👤 Customer App
+## Customer Application
 
 - Browse nearby laundries
-- Search and filter laundries & services
+- Search and filter laundries and services
 - View laundry details and pricing
 - Schedule laundry pickup
 - Select multiple laundry services
@@ -23,15 +23,15 @@ Developed as a university thesis project, WashGo aims to modernize traditional l
 - View order history
 - Save favorite laundries
 - Receive order notifications
-- Light & Dark Mode
-- English & Khmer language support
-- Accessibility improvements
+- Light and Dark Mode
+- English and Khmer language support
+- Accessibility support
 
 ---
 
-## 🎨 Design
+# Design
 
-WashGo follows a premium design language inspired by:
+WashGo follows a modern design language inspired by:
 
 - Uber
 - Grab
@@ -39,7 +39,7 @@ WashGo follows a premium design language inspired by:
 - Stripe
 - Apple Human Interface Guidelines
 
-Design principles include:
+Design principles:
 
 - Clean
 - Minimal
@@ -50,10 +50,10 @@ Design principles include:
 
 ---
 
-## 🛠 Technology Stack
+# Technology Stack
 
 | Category | Technology |
-|----------|------------|
+|-----------|------------|
 | Framework | React Native |
 | Runtime | Expo |
 | Language | TypeScript |
@@ -65,88 +65,100 @@ Design principles include:
 
 ---
 
-## 📱 Current Modules
+# Customer Journey
 
-- 🏠 Home
-- 🧺 Laundries
-- 📦 Orders
-- 👤 Profile
-- ❤️ Favorites
-- 🔔 Notifications
-- 📍 Saved Addresses
-- 💳 Payment Methods
-- ⚙️ Settings
-- ❓ Help Center
-- ℹ️ About WashGo
-
----
-
-## 🚚 Booking Flow
-
-```text
+```
 Home
-   ↓
+   │
+   ▼
 Choose Laundry
-   ↓
+   │
+   ▼
 Laundry Details
-   ↓
+   │
+   ▼
 Choose Services
-   ↓
+   │
+   ▼
 Pickup Details
-   ↓
+   │
+   ▼
 Order Summary
-   ↓
+   │
+   ▼
 Payment Method
-   ↓
+   │
+   ▼
 Pickup Requested
-   ↓
+   │
+   ▼
 Order Tracking
-   ↓
+   │
+   ▼
 Order Details
 ```
 
 ---
 
-## 🌙 User Experience
+# Current Modules
 
-WashGo includes:
-
-- Modern reusable component library
-- Responsive layouts
-- Premium UI animations
-- Dark Mode
-- English / Khmer localization
-- Accessibility support
-- Consistent design system
-
----
-
-## 🎓 Academic Project
-
-This project is being developed as part of a university thesis entitled:
-
-> **Design and Development of an On-Demand Laundry Pickup and Delivery Platform (WashGo) for Siem Reap City**
-
-The goal is to improve service accessibility, customer convenience, and operational efficiency through digital transformation.
+- Home
+- Laundries
+- Orders
+- Profile
+- Favorites
+- Notifications
+- Saved Addresses
+- Payment Methods
+- Settings
+- Help Center
+- About WashGo
 
 ---
 
-## 🚀 Future Development
+# Project Goal
 
-Planned features include:
+WashGo aims to modernize traditional laundry services by providing a convenient, reliable, and user-friendly mobile platform.
+
+The project demonstrates how digital technology can improve customer convenience, streamline laundry operations, and enhance service accessibility through an integrated on-demand platform.
+
+---
+
+# Future Development
+
+The current repository focuses on the customer mobile application.
+
+Future development will include:
 
 - Rider Mobile Application
 - Laundry Partner Dashboard
-- Admin Dashboard
+- Administrator Dashboard
+- Backend API
+- Authentication Server
 - Live GPS Tracking
 - Google Maps Integration
-- Online Payments
 - Push Notifications
-- Backend API Integration
-- Real-time Order Updates
+- Online Payment Gateway
+- Real-time Order Synchronization
 
 ---
 
-## 👨‍💻 Author
+# Academic Information
 
-Developed with ❤️ as a university thesis project.
+**Project Title**
+
+Design and Development of an On-Demand Laundry Pickup and Delivery Platform (WashGo) for Siem Reap City
+
+**Institution**
+
+Angkor University
+
+**Project Type**
+
+University Thesis Project
+
+---
+
+# License
+
+This project is developed for academic purposes as part of a university thesis.
