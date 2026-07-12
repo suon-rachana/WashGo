@@ -28,6 +28,7 @@ export default function RootLayout() {
         <Stack.Screen name="services/index" />
         <Stack.Screen name="shops/index" />
         <Stack.Screen name="pickup/index" />
+        <Stack.Screen name="map/index" />
         <Stack.Screen name="summary/index" />
         <Stack.Screen name="payment/index" />
         <Stack.Screen name="success/index" />

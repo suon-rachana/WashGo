@@ -6,9 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CharacterCounter, SelectableOption } from '@/src/components/common';
 import { Button, Input } from '@/src/components/ui';
-import { addresses, dateOptions, sizeOptions, timeOptions } from '@/src/data/mock';
+import { addresses, dateOptions, mapLocationAddress, sizeOptions, timeOptions } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { formatCoordinates, parseLatitudeParam, parseLongitudeParam } from '@/src/utils/coordinates';
 
 const NOTES_MAX_LENGTH = 150;
 
@@ -16,9 +18,43 @@ export default function PickupBookingScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { laundryId, serviceIds } = useLocalSearchParams<{ laundryId?: string; serviceIds?: string }>();
+  const { t } = useTranslation();
+  const { laundryId, serviceIds, selectedLocation, latitude, longitude } = useLocalSearchParams<{
+    laundryId?: string;
+    serviceIds?: string;
+    selectedLocation?: string;
+    latitude?: string;
+    longitude?: string;
+  }>();
 
-  const [addressId, setAddressId] = useState<string | null>(null);
+  const isMapLocationSelected = selectedLocation === mapLocationAddress.id;
+
+  // Route params arrive as strings (or may be missing/malformed) — never
+  // trust them blindly, only use them once both parse to valid coordinates.
+  const selectedCoordinates = useMemo(() => {
+    const parsedLatitude = parseLatitudeParam(latitude);
+    const parsedLongitude = parseLongitudeParam(longitude);
+    return parsedLatitude !== null && parsedLongitude !== null
+      ? { latitude: parsedLatitude, longitude: parsedLongitude }
+      : null;
+  }, [latitude, longitude]);
+
+  // The map-picked location is only added to this screen's own displayed
+  // options when the user actually returns from /map with a selection — the
+  // shared `addresses` mock list itself is never mutated. `mapLocationAddress`
+  // remains the fallback display information; when valid coordinates came
+  // back from /map, they're appended beneath its address line.
+  const addressOptions = useMemo(() => {
+    if (!isMapLocationSelected) return addresses;
+    const mapAddress = selectedCoordinates
+      ? { ...mapLocationAddress, detail: `${mapLocationAddress.detail}\n${formatCoordinates(selectedCoordinates)}` }
+      : mapLocationAddress;
+    return [mapAddress, ...addresses];
+  }, [isMapLocationSelected, selectedCoordinates]);
+
+  const [addressId, setAddressId] = useState<string | null>(() =>
+    isMapLocationSelected ? mapLocationAddress.id : null
+  );
   const [sizeId, setSizeId] = useState<string | null>(null);
   const [dateId, setDateId] = useState<string | null>(null);
   const [timeId, setTimeId] = useState<string | null>(null);
@@ -42,6 +78,18 @@ export default function PickupBookingScreen() {
     } as unknown as Href);
   };
 
+  const handleChooseOnMap = () => {
+    // `/map` is an index route; see the Href-cast note in app/(tabs)/home.tsx —
+    // the local typed-routes generator doesn't collapse index files to their parent path.
+    router.push({
+      pathname: '/map',
+      params: {
+        ...(laundryId ? { laundryId } : {}),
+        ...(serviceIds ? { serviceIds } : {}),
+      },
+    } as unknown as Href);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -56,7 +104,7 @@ export default function PickupBookingScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Pickup Address</Text>
           <View style={styles.optionList}>
-            {addresses.map((address) => (
+            {addressOptions.map((address) => (
               <SelectableOption
                 key={address.id}
                 title={address.label}
@@ -78,6 +126,16 @@ export default function PickupBookingScreen() {
               <Text style={styles.addAddressText}>Add New Address</Text>
             </Pressable>
           </View>
+
+          <Button
+            title={t('chooseOnMap')}
+            variant="outline"
+            fullWidth
+            onPress={handleChooseOnMap}
+            icon={<Ionicons name="map-outline" size={16} color={colors.primary} />}
+            accessibilityHint="Opens a map to choose your pickup point"
+            style={styles.chooseOnMapButton}
+          />
         </View>
 
         <View style={styles.section}>
@@ -202,6 +260,9 @@ const createStyles = (colors: ColorScheme) =>
     },
     optionList: {
       gap: Spacing.sm,
+    },
+    chooseOnMapButton: {
+      marginTop: Spacing.sm,
     },
     optionRowGroup: {
       flexDirection: 'row',

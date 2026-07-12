@@ -60,7 +60,23 @@ export type TranslationKey =
   | 'seeAll'
   | 'popularServices'
   | 'noLaundriesFound'
-  | 'noLaundriesFoundDescription';
+  | 'noLaundriesFoundDescription'
+  // Map / location picker
+  | 'chooseOnMap'
+  | 'chooseLocation'
+  | 'moveMapToSelectPickupPoint'
+  | 'selectedLocation'
+  | 'confirmLocation'
+  | 'currentLocation'
+  | 'latitude'
+  | 'longitude'
+  | 'selectedCoordinates'
+  | 'locationPermissionRequired'
+  | 'locationPermissionMessage'
+  | 'unableToGetCurrentLocation'
+  | 'locatingYou'
+  | 'mapUnavailable'
+  | 'mapFallbackMessage';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   en: {
@@ -117,6 +133,22 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     popularServices: 'Popular Services',
     noLaundriesFound: 'No laundries found',
     noLaundriesFoundDescription: 'Try searching for another laundry or service.',
+
+    chooseOnMap: 'Choose on Map',
+    chooseLocation: 'Choose Location',
+    moveMapToSelectPickupPoint: 'Move the map to select your pickup point.',
+    selectedLocation: 'Selected Location',
+    confirmLocation: 'Confirm Location',
+    currentLocation: 'Current Location',
+    latitude: 'Latitude',
+    longitude: 'Longitude',
+    selectedCoordinates: 'Coordinates',
+    locationPermissionRequired: 'Location Permission Required',
+    locationPermissionMessage: 'Please allow location access to use your current location, or move the map manually to select a pickup point.',
+    unableToGetCurrentLocation: 'Unable to get your current location. Please try again or move the map manually.',
+    locatingYou: 'Locating you…',
+    mapUnavailable: 'Interactive map unavailable',
+    mapFallbackMessage: 'The interactive map could not be loaded on this device. You can still confirm the default pickup point below.',
   },
   km: {
     home: 'ទំព័រដើម',
@@ -172,5 +204,21 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     popularServices: 'សេវាកម្មពេញនិយម',
     noLaundriesFound: 'រកមិនឃើញហាងបោកគក់',
     noLaundriesFoundDescription: 'សូមសាកល្បងស្វែងរកហាងបោកគក់ ឬសេវាកម្មផ្សេងទៀត។',
+
+    chooseOnMap: 'ជ្រើសរើសលើផែនទី',
+    chooseLocation: 'ជ្រើសរើសទីតាំង',
+    moveMapToSelectPickupPoint: 'ផ្លាស់ទីផែនទីដើម្បីជ្រើសរើសទីតាំងមកយករបស់អ្នក។',
+    selectedLocation: 'ទីតាំងដែលបានជ្រើសរើស',
+    confirmLocation: 'បញ្ជាក់ទីតាំង',
+    currentLocation: 'ទីតាំងបច្ចុប្បន្ន',
+    latitude: 'រយៈទទឹង',
+    longitude: 'រយៈបណ្តោយ',
+    selectedCoordinates: 'កូអរដោនេ',
+    locationPermissionRequired: 'ត្រូវការសិទ្ធិចូលប្រើទីតាំង',
+    locationPermissionMessage: 'សូមអនុញ្ញាតការចូលប្រើទីតាំង ដើម្បីប្រើទីតាំងបច្ចុប្បន្នរបស់អ្នក ឬផ្លាស់ទីផែនទីដោយដៃដើម្បីជ្រើសរើសទីតាំងមកយក។',
+    unableToGetCurrentLocation: 'មិនអាចទទួលបានទីតាំងបច្ចុប្បន្នរបស់អ្នកបានទេ។ សូមព្យាយាមម្តងទៀត ឬផ្លាស់ទីផែនទីដោយដៃ។',
+    locatingYou: 'កំពុងកំណត់ទីតាំងរបស់អ្នក…',
+    mapUnavailable: 'ផែនទីអន្តរកម្មមិនអាចប្រើបានទេ',
+    mapFallbackMessage: 'ផែនទីអន្តរកម្មមិនអាចផ្ទុកបានលើឧបករណ៍នេះទេ។ អ្នកនៅតែអាចបញ្ជាក់ទីតាំងមកយកលំនាំដើមខាងក្រោម។',
   },
 };

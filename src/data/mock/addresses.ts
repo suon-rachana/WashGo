@@ -20,6 +20,21 @@ function formatAddressDetail(street: string, city: string, province: string): st
   return [street, city, province].filter(Boolean).join(', ');
 }
 
+// Represents a location the user picked on the mock map screen (app/map).
+// Kept separate from `addresses` rather than pushed into it — the Pickup
+// screen adds it to its own displayed options only after a map selection,
+// so the shared mock list itself is never mutated.
+export const mapLocationAddress: Address = {
+  id: 'map-location',
+  label: 'Selected Location',
+  street: 'Siem Reap, Cambodia',
+  city: '',
+  province: '',
+  notes: '',
+  icon: 'location',
+  detail: formatAddressDetail('Siem Reap, Cambodia', '', ''),
+};
+
 export const addresses: Address[] = [
   {
     id: 'current-location',
