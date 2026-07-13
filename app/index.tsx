@@ -30,7 +30,7 @@ export default function SplashScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Button title="Get Started" fullWidth onPress={() => router.push('/onboarding')} />
+        <Button title="Get Started" fullWidth onPress={() => router.replace('/onboarding')} />
       </View>
     </SafeAreaView>
   );

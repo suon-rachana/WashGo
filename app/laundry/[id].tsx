@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,14 +23,17 @@ export default function LaundryDetailScreen() {
   if (!laundry) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <Stack.Screen
-          options={{
-            headerShown: true,
-            title: 'Laundry',
-            headerStyle: { backgroundColor: colors.background },
-            headerTintColor: colors.text,
-          }}
-        />
+        <View style={styles.header}>
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            style={styles.backButton}
+          >
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+        </View>
         <View style={styles.notFound}>
           <Text style={styles.notFoundText}>This laundry could not be found.</Text>
         </View>
@@ -46,15 +49,17 @@ export default function LaundryDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          headerTitle: '',
-          headerTransparent: false,
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
-        }}
-      />
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          style={styles.backButton}
+        >
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </Pressable>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.headerRow}>
@@ -188,6 +193,15 @@ const createStyles = (colors: ColorScheme) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    header: {
+      paddingHorizontal: Spacing.xl,
+      paddingBottom: Spacing.md,
+    },
+    backButton: {
+      alignSelf: 'flex-start',
+      marginBottom: Spacing.sm,
+      marginLeft: -Spacing.xxs,
     },
     content: {
       paddingHorizontal: Spacing.xl,
