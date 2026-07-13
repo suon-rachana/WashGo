@@ -14,24 +14,6 @@ A demonstration video and presentation are included with the interview submissio
 
 ---
 
-# Screenshots
-
-> Replace the placeholders below with your application screenshots.
-
-| Login | Home |
-|-------|------|
-| ![Login](screenshots/login.png) | ![Home](screenshots/home.png) |
-
-| Laundry Details | Services |
-|-----------------|----------|
-| ![Laundry Details](screenshots/laundry-details.png) | ![Services](screenshots/services.png) |
-
-| Pickup | Order Tracking |
-|---------|----------------|
-| ![Pickup](screenshots/pickup.png) | ![Tracking](screenshots/tracking.png) |
-
----
-
 # Implemented Features
 
 - Customer authentication interface
