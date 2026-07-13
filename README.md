@@ -1,52 +1,51 @@
 # WashGo
 
-A premium on-demand laundry pickup and delivery platform built with React Native and Expo.
+A modern on-demand laundry pickup and delivery platform built with **React Native**, **Expo**, and **TypeScript**.
 
-WashGo connects customers with nearby laundry partners, allowing them to schedule pickups, select laundry services, track orders in real time, manage addresses and payment methods, and receive status updates through a modern mobile experience.
+WashGo enables customers to discover nearby laundries, schedule pickups, select laundry services, and track their orders through a clean and intuitive mobile experience.
 
-The project is being developed as a university thesis focusing on digital transformation for laundry services in Siem Reap, Cambodia.
+This repository contains the customer mobile application developed as both a software engineering portfolio project and a university thesis.
 
 ---
 
-# Features
+# Demo
 
-## Customer Application
+A demonstration video and presentation are included with the interview submission.
 
+---
+
+# Screenshots
+
+> Replace the placeholders below with your application screenshots.
+
+| Login | Home |
+|-------|------|
+| ![Login](screenshots/login.png) | ![Home](screenshots/home.png) |
+
+| Laundry Details | Services |
+|-----------------|----------|
+| ![Laundry Details](screenshots/laundry-details.png) | ![Services](screenshots/services.png) |
+
+| Pickup | Order Tracking |
+|---------|----------------|
+| ![Pickup](screenshots/pickup.png) | ![Tracking](screenshots/tracking.png) |
+
+---
+
+# Implemented Features
+
+- Customer authentication interface
 - Browse nearby laundries
-- Search and filter laundries and services
-- View laundry details and pricing
-- Schedule laundry pickup
-- Select multiple laundry services
-- Manage saved addresses
-- Manage payment methods
-- Track orders in real time
-- View order history
-- Save favorite laundries
-- Receive order notifications
-- Light and Dark Mode
-- English and Khmer language support
-- Accessibility support
-
----
-
-# Design
-
-WashGo follows a modern design language inspired by:
-
-- Uber
-- Grab
-- Airbnb
-- Stripe
-- Apple Human Interface Guidelines
-
-Design principles:
-
-- Clean
-- Minimal
-- Spacious
-- Modern
-- Fast
-- Trustworthy
+- Search laundries and services
+- View laundry details
+- Multi-service selection
+- Pickup scheduling
+- Interactive map for pickup location
+- Order summary
+- Order tracking timeline
+- Light & Dark Mode
+- English & Khmer localization
+- Responsive modern user interface
 
 ---
 
@@ -60,6 +59,8 @@ Design principles:
 | Navigation | Expo Router |
 | State Management | Zustand |
 | Styling | Custom Design System |
+| Maps | React Native Maps |
+| Location | Expo Location |
 | Theme | Light & Dark Mode |
 | Localization | English & Khmer |
 
@@ -67,7 +68,7 @@ Design principles:
 
 # Customer Journey
 
-```
+```text
 Home
    │
    ▼
@@ -86,79 +87,95 @@ Pickup Details
 Order Summary
    │
    ▼
-Payment Method
-   │
-   ▼
-Pickup Requested
-   │
-   ▼
 Order Tracking
-   │
-   ▼
-Order Details
 ```
 
 ---
 
-# Current Modules
+# Project Structure
 
-- Home
-- Laundries
-- Orders
-- Profile
-- Favorites
-- Notifications
-- Saved Addresses
-- Payment Methods
-- Settings
-- Help Center
-- About WashGo
-
----
-
-# Project Goal
-
-WashGo aims to modernize traditional laundry services by providing a convenient, reliable, and user-friendly mobile platform.
-
-The project demonstrates how digital technology can improve customer convenience, streamline laundry operations, and enhance service accessibility through an integrated on-demand platform.
+```text
+app/
+src/
+components/
+theme/
+hooks/
+utils/
+data/
+assets/
+```
 
 ---
 
-# Future Development
+# Getting Started
+
+### Clone the repository
+
+```bash
+git clone https://github.com/suon-rachana/washgo-mobile.git
+```
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Start the development server
+
+```bash
+npx expo start
+```
+
+---
+
+# Design Philosophy
+
+WashGo follows a modern design language inspired by:
+
+- Apple Human Interface Guidelines
+- Uber
+- Airbnb
+- Stripe
+- Linear
+
+Design principles:
+
+- Clean
+- Minimal
+- Spacious
+- Modern
+- Fast
+- Accessible
+
+---
+
+# Future Roadmap
 
 The current repository focuses on the customer mobile application.
 
-Future development will include:
+Future development includes:
 
+- Backend REST API
 - Rider Mobile Application
 - Laundry Partner Dashboard
 - Administrator Dashboard
-- Backend API
-- Authentication Server
-- Live GPS Tracking
-- Google Maps Integration
+- Authentication Service
+- Online Payment Integration
 - Push Notifications
-- Online Payment Gateway
-- Real-time Order Synchronization
+- Live GPS Tracking
+- Real-Time Order Synchronization
 
 ---
 
-# Academic Information
+# About the Project
 
-**Project Title**
+WashGo is designed to modernize traditional laundry services by providing a convenient, reliable, and user-friendly digital platform.
 
-Design and Development of an On-Demand Laundry Pickup and Delivery Platform (WashGo) for Siem Reap City
-
-**Institution**
-
-Angkor University
-
-**Project Type**
-
-University Thesis Project
+This project is also being developed as part of my undergraduate thesis at **Angkor University**.
 
 ---
 
 # License
 
-This project is developed for academic purposes as part of a university thesis.
+This project is intended for educational and portfolio purposes.
