@@ -1,10 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { SectionHeader } from '@/src/components/common';
+import { AppScreen } from '@/src/components/layout';
 import { OrderTimeline, RiderCard } from '@/src/components/order';
 import { Badge, Button, Card, Chip } from '@/src/components/ui';
 import {
@@ -43,17 +42,11 @@ export default function OrderTrackingScreen() {
 
   if (!order) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-          </Pressable>
-          <Text style={styles.title}>{t('orderTracking')}</Text>
-        </View>
+      <AppScreen title={t('trackOrder')}>
         <View style={styles.notFound}>
           <Text style={styles.notFoundText}>{t('orderNotFound')}</Text>
         </View>
-      </SafeAreaView>
+      </AppScreen>
     );
   }
 
@@ -77,118 +70,85 @@ export default function OrderTrackingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>{t('orderTracking')}</Text>
-        <Text style={styles.subtitle}>Follow your laundry status in real time.</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Card variant="elevated" style={styles.statusCard}>
+    <AppScreen
+      title={t('trackOrder')}
+      footer={
+        <>
+          <Button
+            title={t('viewDetails')}
+            fullWidth
+            onPress={handleViewFullDetails}
+            accessibilityHint="Navigates to order details"
+          />
+          <Button
+            title={t('backToHome')}
+            variant="outline"
+            fullWidth
+            onPress={handleBackToHome}
+            accessibilityHint="Returns to the home screen"
+          />
+        </>
+      }
+    >
+      <View style={styles.section}>
+        <SectionHeader title={t('currentStatus')} />
+        <Card variant="elevated">
           <View style={styles.statusHeader}>
             <Text style={styles.orderId}>{order.id}</Text>
             <Badge label={statusLabel} variant="primary" />
           </View>
           <Text style={styles.shopName}>{laundry?.name ?? 'Unknown laundry'}</Text>
         </Card>
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Order Timeline" />
-          <Card variant="outlined">
-            <OrderTimeline steps={timelineSteps} currentStepId={order.currentStepId} />
-          </Card>
-        </View>
+      <View style={styles.section}>
+        <SectionHeader title="Order Timeline" />
+        <Card variant="outlined">
+          <OrderTimeline steps={timelineSteps} currentStepId={order.currentStepId} />
+        </Card>
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Your Rider" />
-          <RiderCard
-            name={mockRider.name}
-            rating={mockRider.rating}
-            vehicle={mockRider.vehicle}
-            plate={mockRider.plate}
-            onCall={() => console.log('Call rider pressed')}
-            onMessage={() => console.log('Message rider pressed')}
-          />
-        </View>
-
-        <View style={[styles.section, styles.lastSection]}>
-          <SectionHeader title="Order Summary" />
-          <Card variant="outlined">
-            <Text style={styles.previewLabel}>Selected Services</Text>
-            <View style={styles.servicesRow}>
-              {selectedServices.length === 0 ? (
-                <Text style={styles.previewValue}>No services selected</Text>
-              ) : (
-                selectedServices.map((service) => <Chip key={service.id} label={service.title} />)
-              )}
-            </View>
-
-            <View style={styles.previewRow}>
-              <Text style={styles.previewLabel}>Pickup Address</Text>
-              <Text style={styles.previewValue}>{address?.label ?? 'Not selected'}</Text>
-            </View>
-
-            <View style={[styles.previewRow, styles.previewRowLast]}>
-              <Text style={styles.previewLabelEmphasis}>Estimated Total</Text>
-              <Text style={styles.previewValueEmphasis}>${estimatedTotal.toFixed(2)}</Text>
-            </View>
-          </Card>
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <Button
-          title={t('viewDetails')}
-          fullWidth
-          onPress={handleViewFullDetails}
-          accessibilityHint="Navigates to order details"
-        />
-        <Button
-          title={t('backToHome')}
-          variant="outline"
-          fullWidth
-          onPress={handleBackToHome}
-          accessibilityHint="Returns to the home screen"
+      <View style={styles.section}>
+        <SectionHeader title="Your Rider" />
+        <RiderCard
+          name={mockRider.name}
+          rating={mockRider.rating}
+          vehicle={mockRider.vehicle}
+          plate={mockRider.plate}
+          onCall={() => console.log('Call rider pressed')}
+          onMessage={() => console.log('Message rider pressed')}
         />
       </View>
-    </SafeAreaView>
+
+      <View style={[styles.section, styles.lastSection]}>
+        <SectionHeader title="Order Summary" />
+        <Card variant="outlined">
+          <Text style={styles.previewLabel}>Selected Services</Text>
+          <View style={styles.servicesRow}>
+            {selectedServices.length === 0 ? (
+              <Text style={styles.previewValue}>No services selected</Text>
+            ) : (
+              selectedServices.map((service) => <Chip key={service.id} label={service.title} />)
+            )}
+          </View>
+
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Pickup Address</Text>
+            <Text style={styles.previewValue}>{address?.label ?? 'Not selected'}</Text>
+          </View>
+
+          <View style={[styles.previewRow, styles.previewRowLast]}>
+            <Text style={styles.previewLabelEmphasis}>Estimated Total</Text>
+            <Text style={styles.previewValueEmphasis}>${estimatedTotal.toFixed(2)}</Text>
+          </View>
+        </Card>
+      </View>
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-      marginBottom: Spacing.xxs,
-    },
-    subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     notFound: {
       flex: 1,
       alignItems: 'center',
@@ -199,9 +159,6 @@ const createStyles = (colors: ColorScheme) =>
       fontSize: Typography.body.fontSize,
       color: colors.textMuted,
       textAlign: 'center',
-    },
-    statusCard: {
-      marginBottom: Spacing.xxl,
     },
     statusHeader: {
       flexDirection: 'row',
@@ -221,10 +178,10 @@ const createStyles = (colors: ColorScheme) =>
       color: colors.text,
     },
     section: {
-      marginBottom: Spacing.xxl,
+      marginBottom: Spacing.xl,
     },
     lastSection: {
-      marginBottom: Spacing.xl,
+      marginBottom: 0,
     },
     previewLabel: {
       fontSize: Typography.caption.fontSize,
@@ -261,14 +218,5 @@ const createStyles = (colors: ColorScheme) =>
       fontSize: Typography.subtitle.fontSize,
       fontWeight: Typography.subtitle.fontWeight,
       color: colors.primary,
-    },
-    footer: {
-      paddingHorizontal: Spacing.xl,
-      paddingTop: Spacing.md,
-      paddingBottom: Spacing.md,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      backgroundColor: colors.surface,
-      gap: Spacing.sm,
     },
   });

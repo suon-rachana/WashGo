@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
 import { useMemo } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { NotificationBadge } from '@/src/components/notification';
@@ -79,11 +79,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('profile')}</Text>
-      </View>
-
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Card variant="elevated" style={styles.profileCard}>
           <Avatar name={displayName} />
@@ -222,19 +218,9 @@ const createStyles = (colors: ColorScheme) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingTop: Spacing.md,
-      paddingBottom: Spacing.md,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-    },
     content: {
       paddingHorizontal: Spacing.xl,
+      paddingTop: Spacing.lg,
       paddingBottom: Spacing.xl,
     },
     profileCard: {

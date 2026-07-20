@@ -13,7 +13,19 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        // Off by default — Home keeps its own custom in-page header.
+        // Orders/Laundries/Profile below turn this on for a compact native
+        // header matching the rest of the app; these style options apply
+        // whenever a screen does.
         headerShown: false,
+        headerShadowVisible: false,
+        headerTitleAlign: 'center',
+        headerTintColor: colors.text,
+        headerStyle: { backgroundColor: colors.background },
+        headerTitleStyle: {
+          fontSize: Typography.subtitle.fontSize,
+          fontWeight: Typography.subtitle.fontWeight,
+        },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
@@ -42,6 +54,7 @@ export default function TabLayout() {
         name="orders"
         options={{
           title: t('orders'),
+          headerShown: true,
           tabBarAccessibilityLabel: t('orders'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={size} color={color} />
@@ -51,7 +64,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="laundries"
         options={{
+          // Tab bar keeps the short "Laundries" label; the native header
+          // shows the longer, existing "Choose a Laundry" title.
           title: t('laundries'),
+          headerShown: true,
+          headerTitle: t('chooseALaundry'),
           tabBarAccessibilityLabel: t('laundries'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'shirt' : 'shirt-outline'} size={size} color={color} />
@@ -62,6 +79,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t('profile'),
+          headerShown: true,
           tabBarAccessibilityLabel: t('profile'),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} size={size} color={color} />

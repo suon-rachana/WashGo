@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 
+import { AppScreen } from '@/src/components/layout';
 import { Button, ErrorState, Input, LoadingState } from '@/src/components/ui';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { mockUser } from '@/src/data/mock';
@@ -24,7 +23,6 @@ interface FormErrors {
 }
 
 export default function PersonalInformationScreen() {
-  const router = useRouter();
   const colors = useThemeColors();
   const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -130,20 +128,7 @@ export default function PersonalInformationScreen() {
     saveError === 'not_authenticated' ? t('sessionExpired') : saveError ? t('unableToSaveChanges') : null;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>{t('personalInformation')}</Text>
-      </View>
-
+    <AppScreen title={t('personalInformation')} keyboardAvoiding>
       {isLoading ? (
         <LoadingState message={t('loadingAccount')} />
       ) : loadError ? (
@@ -153,97 +138,65 @@ export default function PersonalInformationScreen() {
           onRetry={loadProfile}
         />
       ) : (
-        <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView
-            contentContainerStyle={styles.content}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.form}>
-              <Input
-                label={t('fullName')}
-                autoCapitalize="words"
-                value={fullName}
-                onChangeText={setFullName}
-                error={errors.fullName}
-                editable={!isSaving}
-              />
-              <Input
-                label={t('phoneNumber')}
-                keyboardType="phone-pad"
-                value={phone}
-                onChangeText={setPhone}
-                error={errors.phone}
-                editable={!isSaving}
-              />
-              <Input
-                label={t('emailAddress')}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-                error={errors.email}
-                editable={!isSupabaseDataSource && !isSaving}
-              />
-            </View>
-
-            {saveErrorMessage ? (
-              <View style={styles.saveErrorBanner} accessibilityLiveRegion="polite">
-                <Ionicons name="alert-circle" size={18} color={colors.danger} />
-                <Text style={styles.saveErrorText}>{saveErrorMessage}</Text>
-              </View>
-            ) : null}
-
-            {showSaved ? (
-              <View style={styles.savedBanner} accessibilityLiveRegion="polite">
-                <Ionicons name="checkmark-circle" size={18} color={colors.success} />
-                <Text style={styles.savedText}>{t('changesSaved')}</Text>
-              </View>
-            ) : null}
-
-            <Button
-              title={t('saveChanges')}
-              fullWidth
-              loading={isSaving}
-              disabled={isSaving}
-              onPress={handleSave}
-              style={styles.saveButton}
+        <>
+          <View style={styles.form}>
+            <Input
+              label={t('fullName')}
+              autoCapitalize="words"
+              value={fullName}
+              onChangeText={setFullName}
+              error={errors.fullName}
+              editable={!isSaving}
             />
-          </ScrollView>
-        </KeyboardAvoidingView>
+            <Input
+              label={t('phoneNumber')}
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+              error={errors.phone}
+              editable={!isSaving}
+            />
+            <Input
+              label={t('emailAddress')}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              error={errors.email}
+              editable={!isSupabaseDataSource && !isSaving}
+            />
+          </View>
+
+          {saveErrorMessage ? (
+            <View style={styles.saveErrorBanner} accessibilityLiveRegion="polite">
+              <Ionicons name="alert-circle" size={18} color={colors.danger} />
+              <Text style={styles.saveErrorText}>{saveErrorMessage}</Text>
+            </View>
+          ) : null}
+
+          {showSaved ? (
+            <View style={styles.savedBanner} accessibilityLiveRegion="polite">
+              <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+              <Text style={styles.savedText}>{t('changesSaved')}</Text>
+            </View>
+          ) : null}
+
+          <Button
+            title={t('saveChanges')}
+            fullWidth
+            loading={isSaving}
+            disabled={isSaving}
+            onPress={handleSave}
+            style={styles.saveButton}
+          />
+        </>
       )}
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    flex: {
-      flex: 1,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     form: {
       gap: Spacing.md,
       marginBottom: Spacing.md,

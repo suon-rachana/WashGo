@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import { ComponentProps, useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ComponentProps, useMemo, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { SectionHeader } from '@/src/components/common';
+import { AppScreen } from '@/src/components/layout';
 import { OrderTimeline } from '@/src/components/order';
-import { Badge, Button, Card } from '@/src/components/ui';
+import { ActionSheet, Badge, Button, Card } from '@/src/components/ui';
 import {
   addresses,
   dateOptions,
@@ -23,7 +23,6 @@ import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
-import { resetToHome } from '@/src/utils/resetToTab';
 
 interface InfoRowProps {
   icon: ComponentProps<typeof Ionicons>['name'];
@@ -81,13 +80,7 @@ export default function OrderDetailsScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { orderId } = useLocalSearchParams<{ orderId?: string }>();
   const order = getOrderById(orderId);
-
-  const handleBackToHome = () => {
-    // Ends the booking/order-review flow — clears any pushed screens above
-    // Home rather than just swapping this one screen. See
-    // src/utils/resetToTab.ts for why a plain replace() isn't enough.
-    resetToHome();
-  };
+  const [isHelpVisible, setIsHelpVisible] = useState(false);
 
   const handleTrackOrder = () => {
     // `/tracking` is an index route; see the Href-cast note in app/(tabs)/home.tsx —
@@ -100,17 +93,11 @@ export default function OrderDetailsScreen() {
 
   if (!order) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-          </Pressable>
-          <Text style={styles.title}>{t('orderDetails')}</Text>
-        </View>
+      <AppScreen title={t('orderDetails')}>
         <View style={styles.notFound}>
           <Text style={styles.notFoundText}>{t('orderNotFound')}</Text>
         </View>
-      </SafeAreaView>
+      </AppScreen>
     );
   }
 
@@ -132,208 +119,190 @@ export default function OrderDetailsScreen() {
   const promotion = promotions[0];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>{t('orderDetails')}</Text>
-        <Text style={styles.subtitle}>All the details for your confirmed order.</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Card variant="elevated" style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <Text style={styles.orderId}>{order.id}</Text>
-            <Badge label={statusLabel} variant="primary" />
-          </View>
-        </Card>
-
-        <View style={styles.section}>
-          <SectionHeader title="Laundry Information" />
-          <Card variant="outlined">
-            <InfoRow
-              icon="storefront-outline"
-              label="Laundry"
-              value={laundry?.name ?? 'Not selected'}
-              colors={colors}
-              styles={styles}
+    <AppScreen
+      title={t('orderDetails')}
+      footer={
+        <>
+          {order.status === 'active' ? (
+            <Button
+              title={t('trackOrder')}
+              fullWidth
+              onPress={handleTrackOrder}
+              accessibilityHint="Navigates to order tracking"
             />
-            {laundry ? (
-              <>
-                <InfoRow
-                  icon="star"
-                  label="Rating"
-                  value={`${laundry.rating.toFixed(1)} • ${laundry.distanceKm.toFixed(1)} km away`}
-                  colors={colors}
-                  styles={styles}
-                />
-                <InfoRow
-                  icon="time-outline"
-                  label="Availability"
-                  value={laundry.isOpen ? 'Open now' : 'Closed'}
-                  subValue={`${laundry.etaMinutes} min estimated turnaround`}
-                  colors={colors}
-                  styles={styles}
-                />
-              </>
-            ) : null}
-          </Card>
+          ) : null}
+          <Button
+            title={t('needHelp')}
+            variant="ghost"
+            fullWidth
+            onPress={() => setIsHelpVisible(true)}
+            accessibilityHint="Opens support options for this order"
+          />
+        </>
+      }
+    >
+      <Card variant="elevated" style={styles.statusCard}>
+        <View style={styles.statusHeader}>
+          <Text style={styles.orderId}>{order.id}</Text>
+          <Badge label={statusLabel} variant="primary" />
         </View>
+      </Card>
 
-        <View style={styles.section}>
-          <SectionHeader title="Selected Services" />
-          <Card variant="outlined" padding="none">
-            {selectedServices.length === 0 ? (
-              <Text style={styles.emptyText}>No services were selected.</Text>
-            ) : (
-              selectedServices.map((service, index) => (
-                <View
-                  key={service.id}
-                  style={[
-                    styles.serviceRow,
-                    index < selectedServices.length - 1 && styles.serviceRowDivider,
-                  ]}
-                >
-                  <Text style={styles.serviceLabel}>{service.title}</Text>
-                  <Text style={styles.serviceValue}>${service.price.toFixed(2)}</Text>
-                </View>
-              ))
-            )}
-          </Card>
-        </View>
-
-        <View style={styles.section}>
-          <SectionHeader title="Pickup Information" />
-          <Card variant="outlined">
-            <InfoRow
-              icon="location-outline"
-              label="Pickup Address"
-              value={address?.label ?? 'Not selected'}
-              subValue={address?.detail}
-              colors={colors}
-              styles={styles}
-            />
-            <InfoRow
-              icon="cube-outline"
-              label="Size Estimate"
-              value={size?.label ?? 'Not selected'}
-              subValue={size?.detail}
-              colors={colors}
-              styles={styles}
-            />
-            <InfoRow
-              icon="calendar-outline"
-              label="Pickup Time"
-              value={date && time ? `${date.label}, ${time.label}` : 'Not selected'}
-              subValue={time?.detail}
-              colors={colors}
-              styles={styles}
-            />
-          </Card>
-        </View>
-
-        <View style={styles.section}>
-          <SectionHeader title="Timeline Preview" />
-          <Card variant="outlined">
-            <OrderTimeline steps={timelineSteps} currentStepId={order.currentStepId} />
-          </Card>
-        </View>
-
-        <View style={styles.section}>
-          <SectionHeader title="Price Breakdown" />
-          <Card variant="outlined">
-            <PriceRow label="Estimated Laundry Fee" value={`$${laundryFee.toFixed(2)}`} styles={styles} />
-            <PriceRow label="Pickup Fee" value={`$${pickupFee.toFixed(2)}`} styles={styles} />
-            <PriceRow label="Return Delivery Fee" value={`$${returnDeliveryFee.toFixed(2)}`} styles={styles} />
-            {discountAmount > 0 ? (
-              <PriceRow
-                label={`Discount (${promotion.discountPercent}%)`}
-                value={`-$${discountAmount.toFixed(2)}`}
-                positive
+      <View style={styles.section}>
+        <SectionHeader title="Laundry" />
+        <Card variant="outlined">
+          <InfoRow
+            icon="storefront-outline"
+            label="Laundry"
+            value={laundry?.name ?? 'Not selected'}
+            colors={colors}
+            styles={styles}
+          />
+          {laundry ? (
+            <>
+              <InfoRow
+                icon="star"
+                label="Rating"
+                value={`${laundry.rating.toFixed(1)} • ${laundry.distanceKm.toFixed(1)} km away`}
+                colors={colors}
                 styles={styles}
               />
-            ) : null}
-            <View style={styles.totalDivider} />
-            <PriceRow label="Estimated Total" value={`$${total.toFixed(2)}`} emphasis styles={styles} />
-          </Card>
-        </View>
-
-        <View style={[styles.section, styles.lastSection]}>
-          <SectionHeader title="Order Notes" />
-          <Card variant="outlined">
-            <Text style={styles.notesText}>{order.notes}</Text>
-          </Card>
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        {order.status === 'active' ? (
-          <Button
-            title={t('trackOrder')}
-            fullWidth
-            onPress={handleTrackOrder}
-            accessibilityHint="Navigates to order tracking"
-          />
-        ) : null}
-        <View style={styles.footerRow}>
-          <Button
-            title="Contact Laundry"
-            variant="outline"
-            onPress={() => console.log('Contact laundry pressed')}
-            accessibilityHint="Opens a way to contact the laundry about this order"
-            style={styles.footerButton}
-          />
-          <Button
-            title="Need Help?"
-            variant="outline"
-            onPress={() => console.log('Need help pressed')}
-            accessibilityHint="Opens support for this order"
-            style={styles.footerButton}
-          />
-        </View>
-        <Button
-          title={t('backToHome')}
-          fullWidth
-          onPress={handleBackToHome}
-          accessibilityHint="Returns to the home screen"
-        />
+              <InfoRow
+                icon="time-outline"
+                label="Availability"
+                value={laundry.isOpen ? 'Open now' : 'Closed'}
+                subValue={`${laundry.etaMinutes} min estimated turnaround`}
+                colors={colors}
+                styles={styles}
+              />
+            </>
+          ) : null}
+        </Card>
       </View>
-    </SafeAreaView>
+
+      <View style={styles.section}>
+        <SectionHeader title="Services" />
+        <Card variant="outlined" padding="none">
+          {selectedServices.length === 0 ? (
+            <Text style={styles.emptyText}>No services were selected.</Text>
+          ) : (
+            selectedServices.map((service, index) => (
+              <View
+                key={service.id}
+                style={[
+                  styles.serviceRow,
+                  index < selectedServices.length - 1 && styles.serviceRowDivider,
+                ]}
+              >
+                <Text style={styles.serviceLabel}>{service.title}</Text>
+                <Text style={styles.serviceValue}>${service.price.toFixed(2)}</Text>
+              </View>
+            ))
+          )}
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Pickup Information" />
+        <Card variant="outlined">
+          <InfoRow
+            icon="location-outline"
+            label="Pickup Address"
+            value={address?.label ?? 'Not selected'}
+            subValue={address?.detail}
+            colors={colors}
+            styles={styles}
+          />
+          <InfoRow
+            icon="cube-outline"
+            label="Size Estimate"
+            value={size?.label ?? 'Not selected'}
+            subValue={size?.detail}
+            colors={colors}
+            styles={styles}
+          />
+          <InfoRow
+            icon="calendar-outline"
+            label="Pickup Time"
+            value={date && time ? `${date.label}, ${time.label}` : 'Not selected'}
+            subValue={time?.detail}
+            colors={colors}
+            styles={styles}
+          />
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Timeline" />
+        <Card variant="outlined">
+          <OrderTimeline steps={timelineSteps} currentStepId={order.currentStepId} />
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Summary" />
+        <Card variant="outlined">
+          <PriceRow label="Estimated Laundry Fee" value={`$${laundryFee.toFixed(2)}`} styles={styles} />
+          <PriceRow label="Pickup Fee" value={`$${pickupFee.toFixed(2)}`} styles={styles} />
+          <PriceRow label="Return Delivery Fee" value={`$${returnDeliveryFee.toFixed(2)}`} styles={styles} />
+          {discountAmount > 0 ? (
+            <PriceRow
+              label={`Discount (${promotion.discountPercent}%)`}
+              value={`-$${discountAmount.toFixed(2)}`}
+              positive
+              styles={styles}
+            />
+          ) : null}
+          <View style={styles.totalDivider} />
+          <PriceRow label="Estimated Total" value={`$${total.toFixed(2)}`} emphasis styles={styles} />
+        </Card>
+      </View>
+
+      <View style={[styles.section, styles.lastSection]}>
+        <SectionHeader title="Order Notes" />
+        <Card variant="outlined">
+          <Text style={styles.notesText}>{order.notes}</Text>
+        </Card>
+      </View>
+
+      <ActionSheet
+        visible={isHelpVisible}
+        onClose={() => setIsHelpVisible(false)}
+        title={t('needHelp')}
+        cancelLabel={t('cancel')}
+        options={[
+          {
+            label: t('contactLaundry'),
+            icon: 'storefront-outline',
+            onPress: () => console.log('Contact laundry pressed'),
+          },
+          ...(order.status === 'active'
+            ? [
+                {
+                  label: t('callRider'),
+                  icon: 'call-outline' as const,
+                  onPress: () => console.log('Call rider pressed'),
+                },
+              ]
+            : []),
+          {
+            label: t('reportAnIssue'),
+            icon: 'alert-circle-outline',
+            onPress: () => console.log('Report an issue pressed'),
+          },
+          {
+            label: t('faq'),
+            icon: 'help-circle-outline',
+            onPress: () => router.push('/help-center'),
+          },
+        ]}
+      />
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-      marginBottom: Spacing.xxs,
-    },
-    subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     notFound: {
       flex: 1,
       alignItems: 'center',
@@ -346,7 +315,7 @@ const createStyles = (colors: ColorScheme) =>
       textAlign: 'center',
     },
     statusCard: {
-      marginBottom: Spacing.xxl,
+      marginBottom: Spacing.xl,
     },
     statusHeader: {
       flexDirection: 'row',
@@ -359,10 +328,10 @@ const createStyles = (colors: ColorScheme) =>
       color: colors.text,
     },
     section: {
-      marginBottom: Spacing.xxl,
+      marginBottom: Spacing.xl,
     },
     lastSection: {
-      marginBottom: Spacing.xl,
+      marginBottom: 0,
     },
     infoRow: {
       flexDirection: 'row',
@@ -459,21 +428,5 @@ const createStyles = (colors: ColorScheme) =>
       fontSize: Typography.body.fontSize,
       lineHeight: Typography.body.lineHeight,
       color: colors.textMuted,
-    },
-    footer: {
-      paddingHorizontal: Spacing.xl,
-      paddingTop: Spacing.md,
-      paddingBottom: Spacing.md,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      backgroundColor: colors.surface,
-      gap: Spacing.sm,
-    },
-    footerRow: {
-      flexDirection: 'row',
-      gap: Spacing.sm,
-    },
-    footerButton: {
-      flex: 1,
     },
   });

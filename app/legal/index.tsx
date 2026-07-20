@@ -1,37 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { SectionHeader } from '@/src/components/common';
+import { AppScreen } from '@/src/components/layout';
 import { Card } from '@/src/components/ui';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
 
 export default function LegalScreen() {
-  const router = useRouter();
   const colors = useThemeColors();
   const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>{t('termsAndPrivacy')}</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <AppScreen title={t('termsAndPrivacy')}>
         <Card variant="outlined" style={styles.noticeCard}>
           <View style={styles.noticeRow}>
             <Ionicons name="information-circle-outline" size={18} color={colors.textMuted} />
@@ -63,36 +47,12 @@ export default function LegalScreen() {
             </Text>
           </Card>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     noticeCard: {
       marginBottom: Spacing.xl,
     },

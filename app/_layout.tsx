@@ -11,6 +11,7 @@ import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useAuthStore } from '@/src/store/auth';
 import { useSettingsStore } from '@/src/store/settingsStore';
+import { Typography } from '@/src/theme';
 
 // Supabase-mode only: keeps unauthenticated users out of the customer tabs
 // and bounces an already-authenticated user away from login/register. Mock
@@ -71,11 +72,23 @@ export default function RootLayout() {
     <ThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack
         screenOptions={{
+          // Off by default so screens that haven't adopted AppScreen/the
+          // native header yet keep rendering their own in-page header
+          // unchanged. AppScreen turns this on per-screen via a nested
+          // <Stack.Screen options={{ headerShown: true }} /> override.
           headerShown: false,
           // Never show a text label next to the native back button (e.g. "(tabs)") —
           // only the chevron icon. Applies to every screen that opts into a native header.
           headerBackTitle: '',
           headerBackButtonDisplayMode: 'minimal',
+          headerTitleAlign: 'center',
+          headerShadowVisible: false,
+          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: colors.background },
+          headerTitleStyle: {
+            fontSize: Typography.subtitle.fontSize,
+            fontWeight: Typography.subtitle.fontWeight,
+          },
         }}
       >
         <Stack.Screen name="index" />

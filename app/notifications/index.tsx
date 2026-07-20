@@ -1,10 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter, type Href } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { NotificationItem } from '@/src/components/notification';
+import { AppScreen } from '@/src/components/layout';
 import { Chip, EmptyState } from '@/src/components/ui';
 import { getOrderById } from '@/src/data/mock';
 import { getUnreadNotificationCount, type WashGoNotification } from '@/src/data/mock/notifications';
@@ -75,46 +74,38 @@ export default function NotificationsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>{t('notifications')}</Text>
-          {unreadCount > 0 ? (
-            <Pressable
-              onPress={markAllAsRead}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={t('markAllAsRead')}
-            >
-              <Text style={styles.markAllText}>{t('markAllAsRead')}</Text>
-            </Pressable>
-          ) : null}
-        </View>
-
-        <View style={styles.filterRow}>
-          <Chip
-            label={t('all')}
-            selected={filter === 'all'}
-            onPress={() => setFilter('all')}
-            accessibilityHint="Shows all notifications"
-          />
-          <Chip
-            label={t('unread')}
-            selected={filter === 'unread'}
-            onPress={() => setFilter('unread')}
-            accessibilityHint="Shows only unread notifications"
-          />
-        </View>
+    <AppScreen
+      title={t('notifications')}
+      headerRight={
+        unreadCount > 0
+          ? () => (
+              <Pressable
+                onPress={markAllAsRead}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('markAllAsRead')}
+              >
+                <Text style={styles.markAllText}>{t('markAllAsRead')}</Text>
+              </Pressable>
+            )
+          : undefined
+      }
+      scroll={false}
+      contentContainerStyle={styles.content}
+    >
+      <View style={styles.filterRow}>
+        <Chip
+          label={t('all')}
+          selected={filter === 'all'}
+          onPress={() => setFilter('all')}
+          accessibilityHint="Shows all notifications"
+        />
+        <Chip
+          label={t('unread')}
+          selected={filter === 'unread'}
+          onPress={() => setFilter('unread')}
+          accessibilityHint="Shows only unread notifications"
+        />
       </View>
 
       <FlatList
@@ -145,36 +136,16 @@ export default function NotificationsScreen() {
           )
         }
       />
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
+    content: {
       paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: Spacing.lg,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
+      paddingTop: Spacing.md,
+      paddingBottom: 0,
     },
     markAllText: {
       fontSize: Typography.bodyMedium.fontSize,
@@ -184,10 +155,10 @@ const createStyles = (colors: ColorScheme) =>
     filterRow: {
       flexDirection: 'row',
       gap: Spacing.sm,
+      marginBottom: Spacing.lg,
     },
     listContent: {
       flexGrow: 1,
-      paddingHorizontal: Spacing.xl,
       paddingBottom: Spacing.xl,
     },
     separator: {

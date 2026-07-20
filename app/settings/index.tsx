@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { ComponentProps, ReactNode, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { AppScreen } from '@/src/components/layout';
 import { Card } from '@/src/components/ui';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
@@ -65,7 +64,6 @@ function SettingRow({
 }
 
 export default function SettingsScreen() {
-  const router = useRouter();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { t } = useTranslation();
@@ -77,22 +75,7 @@ export default function SettingsScreen() {
   const setLanguage = useSettingsStore((state) => state.setLanguage);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>{t('settings')}</Text>
-        <Text style={styles.subtitle}>{t('manageAppPreferences')}</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <AppScreen title={t('settings')}>
         <Text style={styles.sectionLabel}>{t('theme')}</Text>
         <Card variant="outlined" padding="none" style={styles.card}>
           <SettingRow
@@ -172,42 +155,12 @@ export default function SettingsScreen() {
             styles={styles}
           />
         </Card>
-      </ScrollView>
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-      marginBottom: Spacing.xxs,
-    },
-    subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     sectionLabel: {
       fontSize: Typography.label.fontSize,
       fontWeight: Typography.label.fontWeight,

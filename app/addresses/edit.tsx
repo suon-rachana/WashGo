@@ -1,10 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { AddressForm, type AddressFormValues } from '@/src/components/profile';
+import { AppScreen } from '@/src/components/layout';
 import { ErrorState, LoadingState } from '@/src/components/ui';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { addresses as mockAddresses } from '@/src/data/mock';
@@ -79,15 +78,7 @@ export default function EditAddressScreen() {
   const notFound = isSupabaseDataSource ? !isLoading && !loadError && !supabaseAddress : !mockAddress;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>Edit Address</Text>
-        {!notFound ? <Text style={styles.subtitle}>Update this pickup or delivery location.</Text> : null}
-      </View>
-
+    <AppScreen title="Edit Address">
       {isSupabaseDataSource && isLoading ? (
         <LoadingState message={t('loadingAccount')} />
       ) : isSupabaseDataSource && loadError ? (
@@ -101,7 +92,7 @@ export default function EditAddressScreen() {
           <Text style={styles.notFoundText}>This address could not be found.</Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <>
           {saveErrorMessage ? (
             <Text style={styles.errorText} accessibilityLiveRegion="polite">
               {saveErrorMessage}
@@ -131,43 +122,14 @@ export default function EditAddressScreen() {
             onSubmit={handleSave}
             loading={isSaving}
           />
-        </ScrollView>
+        </>
       )}
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-      marginBottom: Spacing.xxs,
-    },
-    subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     errorText: {
       fontSize: Typography.body.fontSize,
       lineHeight: Typography.body.lineHeight,

@@ -1,10 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text } from 'react-native';
 
 import { AddressForm, type AddressFormValues } from '@/src/components/profile';
+import { AppScreen } from '@/src/components/layout';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
@@ -46,58 +45,19 @@ export default function AddAddressScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text style={styles.title}>Add Address</Text>
-        <Text style={styles.subtitle}>Save a new pickup or delivery location.</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {errorMessage ? (
-          <Text style={styles.errorText} accessibilityLiveRegion="polite">
-            {errorMessage}
-          </Text>
-        ) : null}
-        <AddressForm submitLabel="Save Address" onSubmit={handleSave} loading={isSaving} />
-      </ScrollView>
-    </SafeAreaView>
+    <AppScreen title="Add Address">
+      {errorMessage ? (
+        <Text style={styles.errorText} accessibilityLiveRegion="polite">
+          {errorMessage}
+        </Text>
+      ) : null}
+      <AddressForm submitLabel="Save Address" onSubmit={handleSave} loading={isSaving} />
+    </AppScreen>
   );
 }
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.md,
-    },
-    backButton: {
-      alignSelf: 'flex-start',
-      marginBottom: Spacing.sm,
-      marginLeft: -Spacing.xxs,
-    },
-    title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
-      color: colors.text,
-      marginBottom: Spacing.xxs,
-    },
-    subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
-    },
     errorText: {
       fontSize: Typography.body.fontSize,
       lineHeight: Typography.body.lineHeight,

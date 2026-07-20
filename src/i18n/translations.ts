@@ -183,7 +183,16 @@ export type TranslationKey =
   | 'emailVerificationRequired'
   | 'backendNotConfigured'
   | 'demoMode'
-  | 'somethingWentWrong';
+  | 'somethingWentWrong'
+  // Navigation header / section titles introduced by the header refresh
+  | 'laundryDetails'
+  | 'chooseYourService'
+  | 'currentStatus'
+  | 'needHelp'
+  | 'contactLaundry'
+  | 'callRider'
+  | 'reportAnIssue'
+  | 'faq';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   en: {
@@ -364,6 +373,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     backendNotConfigured: 'Backend is not configured yet.',
     demoMode: 'Demo mode — no real account required.',
     somethingWentWrong: 'Something went wrong. Please try again.',
+
+    laundryDetails: 'Laundry Details',
+    chooseYourService: 'Choose your service',
+    currentStatus: 'Current Status',
+    needHelp: 'Need Help',
+    contactLaundry: 'Contact Laundry',
+    callRider: 'Call Rider',
+    reportAnIssue: 'Report an Issue',
+    faq: 'FAQ',
   },
   km: {
     home: 'ទំព័រដើម',
@@ -543,5 +561,14 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     backendNotConfigured: 'ប្រព័ន្ធខាងក្រោយមិនទាន់បានកំណត់រចនាសម្ព័ន្ធនៅឡើយទេ។',
     demoMode: 'របៀបសាកល្បង — មិនចាំបាច់មានគណនីពិតទេ។',
     somethingWentWrong: 'មានបញ្ហាកើតឡើង។ សូមព្យាយាមម្តងទៀត។',
+
+    laundryDetails: 'ព័ត៌មានលម្អិតហាងបោកគក់',
+    chooseYourService: 'ជ្រើសរើសសេវាកម្មរបស់អ្នក',
+    currentStatus: 'ស្ថានភាពបច្ចុប្បន្ន',
+    needHelp: 'ត្រូវការជំនួយ',
+    contactLaundry: 'ទាក់ទងហាងបោកគក់',
+    callRider: 'ហៅអ្នកបើកបរ',
+    reportAnIssue: 'រាយការណ៍ពីបញ្ហា',
+    faq: 'សំណួរញឹកញាប់',
   },
 };
