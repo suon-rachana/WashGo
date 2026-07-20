@@ -6,10 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategoryPill, PromoBanner, SectionHeader } from '@/src/components/common';
 import { LaundryCard } from '@/src/components/laundry';
+import { NotificationBadge } from '@/src/components/notification';
 import { Chip, EmptyState, Input } from '@/src/components/ui';
-import { categories, laundries, mockUser, notifications, promotions, services, type Laundry } from '@/src/data/mock';
+import { categories, laundries, mockUser, promotions, services, type Laundry } from '@/src/data/mock';
+import { getUnreadNotificationCount } from '@/src/data/mock/notifications';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
+import { useNotificationsStore } from '@/src/store/notifications';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
 import { matchesSearch } from '@/src/utils/search';
 
@@ -27,7 +30,8 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const promotion = promotions[0];
   const [searchQuery, setSearchQuery] = useState('');
-  const hasUnreadNotifications = notifications.some((notification) => !notification.isRead);
+  const notifications = useNotificationsStore((state) => state.notifications);
+  const unreadNotificationCount = useMemo(() => getUnreadNotificationCount(notifications), [notifications]);
 
   const isSearching = searchQuery.trim().length > 0;
 
@@ -60,12 +64,16 @@ export default function HomeScreen() {
             onPress={() => router.push(NOTIFICATIONS_HREF)}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel={hasUnreadNotifications ? 'Open notifications, unread' : 'Open notifications'}
+            accessibilityLabel={
+              unreadNotificationCount > 0
+                ? `Open notifications, ${unreadNotificationCount} unread`
+                : 'Open notifications'
+            }
             accessibilityHint="Opens the notifications screen"
             style={styles.bellButton}
           >
             <Ionicons name="notifications-outline" size={20} color={colors.text} />
-            {hasUnreadNotifications ? <View style={styles.unreadDot} /> : null}
+            <NotificationBadge count={unreadNotificationCount} style={styles.notificationBadge} />
           </Pressable>
         </View>
 
@@ -180,16 +188,10 @@ const createStyles = (colors: ColorScheme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    unreadDot: {
+    notificationBadge: {
       position: 'absolute',
-      top: 6,
-      right: 7,
-      width: 9,
-      height: 9,
-      borderRadius: Radius.circle,
-      backgroundColor: colors.danger,
-      borderWidth: 1.5,
-      borderColor: colors.background,
+      top: -4,
+      right: -4,
     },
     locationText: {
       fontSize: Typography.caption.fontSize,

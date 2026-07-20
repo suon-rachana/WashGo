@@ -3,20 +3,24 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Badge, Button, Card, type BadgeVariant } from '@/src/components/ui';
 import { laundries } from '@/src/data/mock/laundries';
-import { getOrderStatusLabel } from '@/src/data/mock/order';
+import { getOrderStatusLabelKey } from '@/src/data/mock/order';
 import type { OrderSummary } from '@/src/data/mock/orders';
+import { dateOptions, timeOptions } from '@/src/data/mock/pickupOptions';
+import { services } from '@/src/data/mock/services';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
 
 export interface OrderSummaryCardProps {
   order: OrderSummary;
   onTrackPress?: () => void;
+  onViewDetails?: () => void;
 }
 
 const STATUS_BADGE_VARIANT: Record<OrderSummary['status'], BadgeVariant> = {
   active: 'primary',
   completed: 'success',
-  cancelled: 'neutral',
+  cancelled: 'danger',
 };
 
 function formatOrderDate(createdAt: string): string {
@@ -27,11 +31,24 @@ function formatOrderDate(createdAt: string): string {
   });
 }
 
-export function OrderSummaryCard({ order, onTrackPress }: OrderSummaryCardProps) {
+export function OrderSummaryCard({ order, onTrackPress, onViewDetails }: OrderSummaryCardProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
   const laundry = laundries.find((item) => item.id === order.laundryId);
-  const statusLabel = getOrderStatusLabel(order.status, order.currentStepId);
+  const statusLabel = t(getOrderStatusLabelKey(order.status, order.currentStepId));
+  const isActive = order.status === 'active';
+
+  const serviceNames = order.serviceIds
+    .split(',')
+    .filter(Boolean)
+    .map((id) => services.find((service) => service.id === id)?.title)
+    .filter((title): title is string => Boolean(title))
+    .slice(0, 2);
+
+  const date = dateOptions.find((item) => item.id === order.dateId);
+  const time = timeOptions.find((item) => item.id === order.timeId);
 
   return (
     <Card variant="elevated">
@@ -44,21 +61,57 @@ export function OrderSummaryCard({ order, onTrackPress }: OrderSummaryCardProps)
 
       <Text style={styles.orderId}>{order.id}</Text>
 
-      <View style={styles.metaRow}>
-        <Text style={styles.metaText}>{formatOrderDate(order.createdAt)}</Text>
+      {serviceNames.length > 0 ? (
+        <Text style={styles.services} numberOfLines={1}>
+          {serviceNames.join(' · ')}
+        </Text>
+      ) : null}
+
+      {isActive ? (
+        <View style={styles.metaBlock}>
+          {date && time ? (
+            <Text style={styles.metaText} numberOfLines={1}>
+              {t('scheduledPickup')}: {date.label}, {time.label}
+            </Text>
+          ) : null}
+          {order.estimatedArrival ? (
+            <Text style={styles.metaText} numberOfLines={1}>
+              {t('estimatedArrival')}: {order.estimatedArrival}
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        <Text style={styles.metaText} numberOfLines={1}>
+          {formatOrderDate(order.createdAt)}
+        </Text>
+      )}
+
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>{t('total')}</Text>
         <Text style={styles.total}>${order.total.toFixed(2)}</Text>
       </View>
 
-      {order.status === 'active' && onTrackPress ? (
-        <Button
-          title="Track"
-          fullWidth
-          onPress={onTrackPress}
-          accessibilityLabel={`Track order ${order.id}`}
-          accessibilityHint="Navigates to order tracking"
-          style={styles.trackButton}
-        />
-      ) : null}
+      <View style={styles.actions}>
+        {isActive && onTrackPress ? (
+          <Button
+            title={t('trackOrder')}
+            onPress={onTrackPress}
+            accessibilityLabel={`${t('trackOrder')} ${order.id}`}
+            accessibilityHint="Navigates to order tracking"
+            style={styles.actionButton}
+          />
+        ) : null}
+        {onViewDetails ? (
+          <Button
+            title={t('viewDetails')}
+            variant="outline"
+            onPress={onViewDetails}
+            accessibilityLabel={`${t('viewDetails')} ${order.id}`}
+            accessibilityHint="Opens the full order details"
+            style={styles.actionButton}
+          />
+        ) : null}
+      </View>
     </Card>
   );
 }
@@ -84,12 +137,26 @@ const createStyles = (colors: ColorScheme) =>
       color: colors.textMuted,
       marginBottom: Spacing.sm,
     },
-    metaRow: {
+    services: {
+      fontSize: Typography.body.fontSize,
+      color: colors.text,
+      marginBottom: Spacing.sm,
+    },
+    metaBlock: {
+      marginBottom: Spacing.sm,
+      gap: Spacing.xxs,
+    },
+    metaText: {
+      fontSize: Typography.caption.fontSize,
+      color: colors.textMuted,
+    },
+    totalRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      marginBottom: Spacing.md,
     },
-    metaText: {
+    totalLabel: {
       fontSize: Typography.body.fontSize,
       color: colors.textMuted,
     },
@@ -98,7 +165,11 @@ const createStyles = (colors: ColorScheme) =>
       fontWeight: Typography.bodyMedium.fontWeight,
       color: colors.primary,
     },
-    trackButton: {
-      marginTop: Spacing.md,
+    actions: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+    },
+    actionButton: {
+      flex: 1,
     },
   });

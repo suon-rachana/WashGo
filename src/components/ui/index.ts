@@ -3,4 +3,6 @@ export * from './Button';
 export * from './Card';
 export * from './Chip';
 export * from './EmptyState';
+export * from './ErrorState';
 export * from './Input';
+export * from './LoadingState';

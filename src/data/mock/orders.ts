@@ -15,6 +15,8 @@ export interface OrderSummary {
   notes: string;
   total: number;
   createdAt: string;
+  /** Only meaningful for active orders that are out for delivery. */
+  estimatedArrival?: string;
 }
 
 // The single source of truth for an order's full booking details. Tracking and
@@ -35,6 +37,35 @@ export const mockOrders: OrderSummary[] = [
     notes: 'Please call upon arrival — gate code is 1234.',
     total: 4.26,
     createdAt: '2026-07-18',
+  },
+  {
+    id: '#WG2507190002',
+    laundryId: 'laundry-3',
+    serviceIds: 'dry-cleaning',
+    addressId: 'work',
+    sizeId: 'medium',
+    dateId: 'today',
+    timeId: 'afternoon',
+    status: 'active',
+    currentStepId: 'cleaning-in-progress',
+    notes: 'Leave at the front desk if I am unavailable.',
+    total: 5.5,
+    createdAt: '2026-07-19',
+  },
+  {
+    id: '#WG2507200005',
+    laundryId: 'laundry-2',
+    serviceIds: 'wash-fold,ironing',
+    addressId: 'home',
+    sizeId: 'large',
+    dateId: 'today',
+    timeId: 'evening',
+    status: 'active',
+    currentStepId: 'out-for-delivery',
+    notes: 'Please ring the doorbell twice.',
+    total: 6.6,
+    createdAt: '2026-07-20',
+    estimatedArrival: '7:15 PM',
   },
   {
     id: '#WG2507150007',
@@ -79,3 +110,13 @@ export const mockOrders: OrderSummary[] = [
     createdAt: '2026-07-10',
   },
 ];
+
+// Centralized filtering so screens never re-derive "what counts as active/history"
+// themselves — the Orders tab, empty states, and tracking fallback all read from these.
+export const activeOrders = mockOrders.filter((order) => order.status === 'active');
+export const pastOrders = mockOrders.filter((order) => order.status !== 'active');
+
+export function getOrderById(id: string | undefined): OrderSummary | undefined {
+  if (!id) return undefined;
+  return mockOrders.find((order) => order.id === id);
+}

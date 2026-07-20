@@ -1,112 +1,150 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter, type Href } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Card, Chip, EmptyState } from '@/src/components/ui';
-import { notifications, type AppNotification } from '@/src/data/mock';
+import { NotificationItem } from '@/src/components/notification';
+import { Chip, EmptyState } from '@/src/components/ui';
+import { getOrderById } from '@/src/data/mock';
+import { getUnreadNotificationCount, type WashGoNotification } from '@/src/data/mock/notifications';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { useTranslation } from '@/src/i18n';
+import { useNotificationsStore } from '@/src/store/notifications';
+import { ColorScheme, Spacing, Typography } from '@/src/theme';
 
-type NotificationFilter = 'all' | 'unread' | 'orders' | 'promotions';
+type NotificationFilter = 'all' | 'unread';
 
-const FILTERS: { id: NotificationFilter; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'unread', label: 'Unread' },
-  { id: 'orders', label: 'Orders' },
-  { id: 'promotions', label: 'Promotions' },
-];
-
-const EMPTY_STATE_COPY: Record<NotificationFilter, { title: string; description: string }> = {
-  all: { title: 'No notifications', description: "You're all caught up." },
-  unread: { title: 'No unread notifications', description: "You've read everything for now." },
-  orders: { title: 'No order updates', description: 'Order updates will appear here.' },
-  promotions: { title: 'No promotions', description: 'Check back later for new offers.' },
-};
-
-interface NotificationCardProps {
-  notification: AppNotification;
-  colors: ColorScheme;
-  styles: ReturnType<typeof createStyles>;
-}
-
-function NotificationCard({ notification, colors, styles }: NotificationCardProps) {
-  const { isRead } = notification;
-
-  return (
-    <Card variant={isRead ? 'outlined' : 'elevated'}>
-      <View
-        style={styles.row}
-        accessible
-        accessibilityLabel={`${notification.title}${isRead ? '' : ', unread'}. ${notification.message}. ${notification.time}`}
-      >
-        <View style={[styles.icon, !isRead && styles.iconUnread]}>
-          <Ionicons name={notification.icon} size={20} color={isRead ? colors.textMuted : colors.primary} />
-        </View>
-        <View style={styles.textWrap}>
-          <View style={styles.titleRow}>
-            <Text style={styles.notificationTitle}>{notification.title}</Text>
-            {!isRead ? <View style={styles.unreadDot} /> : null}
-          </View>
-          <Text style={styles.message} numberOfLines={2}>
-            {notification.message}
-          </Text>
-          <Text style={styles.time}>{notification.time}</Text>
-        </View>
-      </View>
-    </Card>
-  );
-}
+// `/shops` and `/settings` are index routes; the local typed-routes generator
+// doesn't collapse index files to their parent path, so the literal string
+// fails the type check even though it's the correct runtime href. Cast once here.
+const SHOPS_HREF = '/shops' as Href;
+const SETTINGS_HREF = '/settings' as Href;
 
 export default function NotificationsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [activeFilter, setActiveFilter] = useState<NotificationFilter>('all');
+  const [filter, setFilter] = useState<NotificationFilter>('all');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const visibleNotifications = useMemo(() => {
-    if (activeFilter === 'unread') return notifications.filter((item) => !item.isRead);
-    if (activeFilter === 'orders') return notifications.filter((item) => item.category === 'orders');
-    if (activeFilter === 'promotions') return notifications.filter((item) => item.category === 'promotions');
-    return notifications;
-  }, [activeFilter]);
+  const notifications = useNotificationsStore((state) => state.notifications);
+  const markAsRead = useNotificationsStore((state) => state.markAsRead);
+  const markAllAsRead = useNotificationsStore((state) => state.markAllAsRead);
 
-  const emptyState = EMPTY_STATE_COPY[activeFilter];
+  const unreadCount = useMemo(() => getUnreadNotificationCount(notifications), [notifications]);
+  const visibleNotifications = filter === 'unread' ? notifications.filter((item) => !item.isRead) : notifications;
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    // No backend yet — mock the refresh gesture so the screen still feels live.
+    setTimeout(() => setRefreshing(false), 800);
+  }, []);
+
+  const handleNotificationPress = useCallback(
+    (notification: WashGoNotification) => {
+      markAsRead(notification.id);
+
+      if (notification.type === 'promotion') {
+        router.push(SHOPS_HREF);
+        return;
+      }
+
+      if (notification.type === 'system') {
+        router.push(SETTINGS_HREF);
+        return;
+      }
+
+      // Every other type is tied to an order — validate it still exists
+      // before navigating so malformed/missing notification data can't crash
+      // the screen.
+      const order = getOrderById(notification.orderId);
+      if (!order) {
+        Alert.alert(t('orderDetails'), t('orderNotFound'));
+        return;
+      }
+
+      if (order.status === 'active') {
+        router.push({ pathname: '/tracking', params: { orderId: order.id } } as unknown as Href);
+      } else {
+        router.push({ pathname: '/order-details', params: { orderId: order.id } } as unknown as Href);
+      }
+    },
+    [markAsRead, router, t]
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          style={styles.backButton}
+        >
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={styles.title}>Notifications</Text>
-        <Text style={styles.subtitle}>Stay updated on your laundry orders.</Text>
+
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{t('notifications')}</Text>
+          {unreadCount > 0 ? (
+            <Pressable
+              onPress={markAllAsRead}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('markAllAsRead')}
+            >
+              <Text style={styles.markAllText}>{t('markAllAsRead')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        <View style={styles.filterRow}>
+          <Chip
+            label={t('all')}
+            selected={filter === 'all'}
+            onPress={() => setFilter('all')}
+            accessibilityHint="Shows all notifications"
+          />
+          <Chip
+            label={t('unread')}
+            selected={filter === 'unread'}
+            onPress={() => setFilter('unread')}
+            accessibilityHint="Shows only unread notifications"
+          />
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.filterRow}>
-          {FILTERS.map((filter) => (
-            <Chip
-              key={filter.id}
-              label={filter.label}
-              selected={activeFilter === filter.id}
-              onPress={() => setActiveFilter(filter.id)}
-              accessibilityHint={`Shows ${filter.label.toLowerCase()} notifications`}
+      <FlatList
+        data={visibleNotifications}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        renderItem={({ item }) => (
+          <NotificationItem notification={item} onPress={() => handleNotificationPress(item)} />
+        )}
+        ListEmptyComponent={
+          filter === 'unread' ? (
+            <EmptyState
+              icon="checkmark-done-outline"
+              title={t('youAreAllCaughtUp')}
+              description={t('noUnreadNotificationsDescription')}
             />
-          ))}
-        </View>
-
-        <View style={styles.list}>
-          {visibleNotifications.length === 0 ? (
-            <EmptyState title={emptyState.title} description={emptyState.description} icon="notifications-outline" />
           ) : (
-            visibleNotifications.map((notification) => (
-              <NotificationCard key={notification.id} notification={notification} colors={colors} styles={styles} />
-            ))
-          )}
-        </View>
-      </ScrollView>
+            <EmptyState
+              icon="notifications-outline"
+              title={t('noNotifications')}
+              description={t('notificationsEmptyDescription')}
+            />
+          )
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -126,78 +164,33 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.sm,
       marginLeft: -Spacing.xxs,
     },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: Spacing.lg,
+    },
     title: {
       fontSize: Typography.headline.fontSize,
       lineHeight: Typography.headline.lineHeight,
       fontWeight: Typography.headline.fontWeight,
       color: colors.text,
-      marginBottom: Spacing.xxs,
     },
-    subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-    },
-    content: {
-      paddingHorizontal: Spacing.xl,
-      paddingBottom: Spacing.xl,
+    markAllText: {
+      fontSize: Typography.bodyMedium.fontSize,
+      fontWeight: Typography.bodyMedium.fontWeight,
+      color: colors.primary,
     },
     filterRow: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
       gap: Spacing.sm,
-      marginBottom: Spacing.xl,
     },
-    list: {
-      gap: Spacing.md,
+    listContent: {
+      flexGrow: 1,
+      paddingHorizontal: Spacing.xl,
+      paddingBottom: Spacing.xl,
     },
-    row: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-    },
-    icon: {
-      width: 40,
-      height: 40,
-      borderRadius: Radius.circle,
-      backgroundColor: colors.background,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginRight: Spacing.md,
-    },
-    iconUnread: {
-      backgroundColor: `${colors.primary}1A`,
-      borderColor: 'transparent',
-    },
-    textWrap: {
-      flex: 1,
-    },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: Spacing.xs,
-      marginBottom: Spacing.xxs,
-    },
-    notificationTitle: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
-      color: colors.text,
-    },
-    unreadDot: {
-      width: 8,
-      height: 8,
-      borderRadius: Radius.circle,
-      backgroundColor: colors.primary,
-    },
-    message: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      color: colors.textMuted,
-      marginBottom: Spacing.xxs,
-    },
-    time: {
-      fontSize: Typography.caption.fontSize,
-      color: colors.textMuted,
+    separator: {
+      height: Spacing.md,
     },
   });

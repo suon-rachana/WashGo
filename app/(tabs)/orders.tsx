@@ -1,78 +1,117 @@
 import { useRouter, type Href } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OrderSummaryCard } from '@/src/components/order';
 import { Chip, EmptyState } from '@/src/components/ui';
-import { mockOrders, type OrderStatus } from '@/src/data/mock';
+import { activeOrders, pastOrders, type OrderSummary } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
 
-const STATUS_TABS: { id: OrderStatus; label: string }[] = [
-  { id: 'active', label: 'Active' },
-  { id: 'completed', label: 'Completed' },
-  { id: 'cancelled', label: 'Cancelled' },
-];
+type OrdersFilter = 'active' | 'history';
+
+// `/(tabs)/laundries` is a route inside a group; see the Href-cast note in
+// app/profile.tsx — the local typed-routes generator doesn't collapse it to a plain path.
+const LAUNDRIES_HREF = '/(tabs)/laundries' as Href;
 
 export default function OrdersScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [activeTab, setActiveTab] = useState<OrderStatus>('active');
+  const [filter, setFilter] = useState<OrdersFilter>('active');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const visibleOrders = useMemo(
-    () => mockOrders.filter((order) => order.status === activeTab),
-    [activeTab]
+  const visibleOrders: OrderSummary[] = filter === 'active' ? activeOrders : pastOrders;
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    // No backend yet — mock the refresh gesture so the screen still feels live.
+    setTimeout(() => setRefreshing(false), 800);
+  }, []);
+
+  const handleTrackPress = useCallback(
+    (order: OrderSummary) => {
+      router.push({
+        pathname: '/tracking',
+        params: { orderId: order.id },
+      } as unknown as Href);
+    },
+    [router]
   );
 
-  const activeTabLabel = STATUS_TABS.find((tab) => tab.id === activeTab)?.label ?? '';
+  const handleViewDetails = useCallback(
+    (order: OrderSummary) => {
+      router.push({
+        pathname: '/order-details',
+        params: { orderId: order.id },
+      } as unknown as Href);
+    },
+    [router]
+  );
+
+  const handleBookLaundry = useCallback(() => {
+    router.push(LAUNDRIES_HREF);
+  }, [router]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Orders</Text>
-        <Text style={styles.subtitle}>Track and manage your laundry orders.</Text>
+        <Text style={styles.title}>{t('orders')}</Text>
+        <Text style={styles.subtitle}>{t('ordersSubtitle')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.tabRow}>
-          {STATUS_TABS.map((tab) => (
-            <Chip
-              key={tab.id}
-              label={tab.label}
-              selected={activeTab === tab.id}
-              onPress={() => setActiveTab(tab.id)}
-              accessibilityHint={`Shows ${tab.label.toLowerCase()} orders`}
-            />
-          ))}
-        </View>
+      <View style={styles.tabRow}>
+        <Chip
+          label={t('active')}
+          selected={filter === 'active'}
+          onPress={() => setFilter('active')}
+          accessibilityHint="Shows your active orders"
+        />
+        <Chip
+          label={t('history')}
+          selected={filter === 'history'}
+          onPress={() => setFilter('history')}
+          accessibilityHint="Shows your completed and cancelled orders"
+        />
+      </View>
 
-        <View style={styles.list}>
-          {visibleOrders.length === 0 ? (
+      <FlatList
+        data={visibleOrders}
+        keyExtractor={(order) => order.id}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+        }
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        renderItem={({ item }) => (
+          <OrderSummaryCard
+            order={item}
+            onTrackPress={item.status === 'active' ? () => handleTrackPress(item) : undefined}
+            onViewDetails={() => handleViewDetails(item)}
+          />
+        )}
+        ListEmptyComponent={
+          filter === 'active' ? (
             <EmptyState
-              title={`No ${activeTabLabel.toLowerCase()} orders`}
-              description="Orders will show up here once you have some."
+              icon="receipt-outline"
+              title={t('noActiveOrders')}
+              description={t('noActiveOrdersDescription')}
+              actionLabel={t('bookLaundry')}
+              onActionPress={handleBookLaundry}
             />
           ) : (
-            visibleOrders.map((order) => (
-              <OrderSummaryCard
-                key={order.id}
-                order={order}
-                onTrackPress={
-                  order.status === 'active'
-                    ? () =>
-                        router.push({
-                          pathname: '/tracking',
-                          params: { orderId: order.id },
-                        } as unknown as Href)
-                    : undefined
-                }
-              />
-            ))
-          )}
-        </View>
-      </ScrollView>
+            <EmptyState
+              icon="time-outline"
+              title={t('noOrderHistory')}
+              description={t('noOrderHistoryDescription')}
+            />
+          )
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -100,17 +139,18 @@ const createStyles = (colors: ColorScheme) =>
       lineHeight: Typography.body.lineHeight,
       color: colors.textMuted,
     },
-    content: {
+    tabRow: {
+      flexDirection: 'row',
+      gap: Spacing.sm,
+      paddingHorizontal: Spacing.xl,
+      marginBottom: Spacing.lg,
+    },
+    listContent: {
+      flexGrow: 1,
       paddingHorizontal: Spacing.xl,
       paddingBottom: Spacing.xl,
     },
-    tabRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: Spacing.sm,
-      marginBottom: Spacing.xl,
-    },
-    list: {
-      gap: Spacing.lg,
+    separator: {
+      height: Spacing.lg,
     },
   });

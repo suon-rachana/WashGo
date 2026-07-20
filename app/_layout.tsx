@@ -1,12 +1,71 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
+import { LoadingState } from '@/src/components/ui';
+import { isSupabaseDataSource } from '@/src/config/dataSource';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useAuthStore } from '@/src/store/auth';
 import { useSettingsStore } from '@/src/store/settingsStore';
+
+// Supabase-mode only: keeps unauthenticated users out of the customer tabs
+// and bounces an already-authenticated user away from login/register. Mock
+// mode is untouched — the prototype's own router.replace() calls in each
+// screen keep controlling navigation exactly as before.
+function useAuthNavigationGuard() {
+  const router = useRouter();
+  const segments = useSegments();
+  const rootNavigationState = useRootNavigationState();
+  const isInitializing = useAuthStore((state) => state.isInitializing);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  useEffect(() => {
+    if (!isSupabaseDataSource) return;
+    // Wait until the root navigator has mounted, and until the initial
+    // session check has resolved, so we never redirect on stale state.
+    if (!rootNavigationState?.key) return;
+    if (isInitializing) return;
+
+    const topSegment = segments[0] as string | undefined;
+    const inAuthGroup = topSegment === 'login' || topSegment === 'register';
+    const inProtectedGroup = topSegment === '(tabs)';
+
+    if (!isAuthenticated && inProtectedGroup) {
+      router.replace('/login');
+    } else if (isAuthenticated && inAuthGroup) {
+      router.replace('/(tabs)/home');
+    }
+  }, [isAuthenticated, isInitializing, rootNavigationState?.key, router, segments]);
+}
 
 export default function RootLayout() {
   const themeMode = useSettingsStore((state) => state.themeMode);
+  const colors = useThemeColors();
+  const initialize = useAuthStore((state) => state.initialize);
+  const isInitializing = useAuthStore((state) => state.isInitializing);
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  useAuthNavigationGuard();
+
+  if (isSupabaseDataSource && isInitializing) {
+    return (
+      <ThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center' }}>
+          <View>
+            <LoadingState />
+          </View>
+        </SafeAreaView>
+        <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
@@ -44,6 +103,9 @@ export default function RootLayout() {
         <Stack.Screen name="help-center/index" />
         <Stack.Screen name="settings/index" />
         <Stack.Screen name="about/index" />
+        <Stack.Screen name="personal-information/index" />
+        <Stack.Screen name="language/index" />
+        <Stack.Screen name="legal/index" />
         <Stack.Screen name="design-system" options={{ headerShown: true, title: 'Design System' }} />
       </Stack>
       <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />

@@ -7,17 +7,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SectionHeader } from '@/src/components/common';
 import { OrderTimeline, RiderCard } from '@/src/components/order';
 import { Badge, Button, Card, Chip } from '@/src/components/ui';
-import { addresses, laundries, mockOrders, mockRider, orderSteps, promotions, services } from '@/src/data/mock';
+import {
+  activeOrders,
+  addresses,
+  getOrderById,
+  getOrderStatusLabelKey,
+  laundries,
+  mockRider,
+  orderSteps,
+  promotions,
+  services,
+} from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
 
 export default function OrderTrackingScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { orderId } = useLocalSearchParams<{ orderId?: string }>();
-  const order = mockOrders.find((item) => item.id === orderId);
+  // Falls back to the first active mock order when no orderId is passed, so the
+  // booking flow (which doesn't always thread an id through yet) still has something to show.
+  const order = getOrderById(orderId) ?? activeOrders[0];
 
   const handleBackToHome = () => {
     router.replace('/(tabs)/home');
@@ -30,10 +44,10 @@ export default function OrderTrackingScreen() {
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </Pressable>
-          <Text style={styles.title}>Order Tracking</Text>
+          <Text style={styles.title}>{t('orderTracking')}</Text>
         </View>
         <View style={styles.notFound}>
-          <Text style={styles.notFoundText}>This order could not be found.</Text>
+          <Text style={styles.notFoundText}>{t('orderNotFound')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -45,7 +59,8 @@ export default function OrderTrackingScreen() {
   const selectedServiceIds = order.serviceIds.split(',').filter(Boolean);
   const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));
 
-  const currentStep = orderSteps.find((step) => step.id === order.currentStepId);
+  const timelineSteps = orderSteps.map((step) => ({ id: step.id, label: t(step.labelKey) }));
+  const statusLabel = t(getOrderStatusLabelKey(order.status, order.currentStepId));
   const { total: estimatedTotal } = estimateOrderTotal(selectedServices, promotions[0]);
 
   const handleViewFullDetails = () => {
@@ -63,7 +78,7 @@ export default function OrderTrackingScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={styles.title}>Order Tracking</Text>
+        <Text style={styles.title}>{t('orderTracking')}</Text>
         <Text style={styles.subtitle}>Follow your laundry status in real time.</Text>
       </View>
 
@@ -71,7 +86,7 @@ export default function OrderTrackingScreen() {
         <Card variant="elevated" style={styles.statusCard}>
           <View style={styles.statusHeader}>
             <Text style={styles.orderId}>{order.id}</Text>
-            <Badge label={currentStep?.label ?? 'Processing'} variant="primary" />
+            <Badge label={statusLabel} variant="primary" />
           </View>
           <Text style={styles.shopName}>{laundry?.name ?? 'Unknown laundry'}</Text>
         </Card>
@@ -79,7 +94,7 @@ export default function OrderTrackingScreen() {
         <View style={styles.section}>
           <SectionHeader title="Order Timeline" />
           <Card variant="outlined">
-            <OrderTimeline steps={orderSteps} currentStepId={order.currentStepId} />
+            <OrderTimeline steps={timelineSteps} currentStepId={order.currentStepId} />
           </Card>
         </View>
 
@@ -122,13 +137,13 @@ export default function OrderTrackingScreen() {
 
       <View style={styles.footer}>
         <Button
-          title="View Full Details"
+          title={t('viewDetails')}
           fullWidth
           onPress={handleViewFullDetails}
           accessibilityHint="Navigates to order details"
         />
         <Button
-          title="Back to Home"
+          title={t('backToHome')}
           variant="outline"
           fullWidth
           onPress={handleBackToHome}

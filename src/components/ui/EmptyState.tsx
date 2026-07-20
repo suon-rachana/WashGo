@@ -4,14 +4,23 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { Button } from './Button';
 
 export interface EmptyStateProps {
   title: string;
   description: string;
   icon?: ComponentProps<typeof Ionicons>['name'];
+  actionLabel?: string;
+  onActionPress?: () => void;
 }
 
-export function EmptyState({ title, description, icon = 'search-outline' }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  description,
+  icon = 'search-outline',
+  actionLabel,
+  onActionPress,
+}: EmptyStateProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -22,6 +31,9 @@ export function EmptyState({ title, description, icon = 'search-outline' }: Empt
       </View>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
+      {actionLabel && onActionPress ? (
+        <Button title={actionLabel} variant="accent" onPress={onActionPress} style={styles.action} />
+      ) : null}
     </View>
   );
 }
@@ -57,5 +69,8 @@ const createStyles = (colors: ColorScheme) =>
       lineHeight: Typography.body.lineHeight,
       color: colors.textMuted,
       textAlign: 'center',
+    },
+    action: {
+      marginTop: Spacing.lg,
     },
   });

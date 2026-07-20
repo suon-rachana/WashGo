@@ -1,3 +1,5 @@
+import type { TranslationKey } from '@/src/i18n';
+
 export type OrderStepId =
   | 'order-placed'
   | 'rider-assigned'
@@ -10,18 +12,20 @@ export type OrderStepId =
 
 export interface OrderStep {
   id: OrderStepId;
-  label: string;
+  labelKey: TranslationKey;
 }
 
+// Canonical step list + translation key, reused by OrderTimeline, Orders tab,
+// Tracking, and Order Details so the progress copy only has to be translated once.
 export const orderSteps: OrderStep[] = [
-  { id: 'order-placed', label: 'Order Placed' },
-  { id: 'rider-assigned', label: 'Rider Assigned' },
-  { id: 'picked-up', label: 'Picked Up' },
-  { id: 'at-laundry-shop', label: 'At Laundry Shop' },
-  { id: 'cleaning-in-progress', label: 'Cleaning in Progress' },
-  { id: 'ready-for-delivery', label: 'Ready for Delivery' },
-  { id: 'out-for-delivery', label: 'Out for Delivery' },
-  { id: 'delivered', label: 'Delivered' },
+  { id: 'order-placed', labelKey: 'orderStepPlaced' },
+  { id: 'rider-assigned', labelKey: 'orderStepRiderAssigned' },
+  { id: 'picked-up', labelKey: 'orderStepPickedUp' },
+  { id: 'at-laundry-shop', labelKey: 'orderStepAtLaundryShop' },
+  { id: 'cleaning-in-progress', labelKey: 'orderStepWashing' },
+  { id: 'ready-for-delivery', labelKey: 'orderStepReadyForDelivery' },
+  { id: 'out-for-delivery', labelKey: 'orderStepOutForDelivery' },
+  { id: 'delivered', labelKey: 'orderStepDelivered' },
 ];
 
 export interface Rider {
@@ -38,9 +42,13 @@ export const mockRider: Rider = {
   plate: '1AB-1234',
 };
 
-// Shared status-badge label for an order: cancelled orders aren't part of the
-// linear timeline, everything else reads its label from the current step.
-export function getOrderStatusLabel(status: 'active' | 'completed' | 'cancelled', currentStepId: OrderStepId): string {
-  if (status === 'cancelled') return 'Cancelled';
-  return orderSteps.find((step) => step.id === currentStepId)?.label ?? 'Processing';
+// Shared status-badge translation key for an order: cancelled/completed orders show their
+// status directly, active orders read the label of whichever step they're currently on.
+export function getOrderStatusLabelKey(
+  status: 'active' | 'completed' | 'cancelled',
+  currentStepId: OrderStepId
+): TranslationKey {
+  if (status === 'cancelled') return 'cancelled';
+  if (status === 'completed') return 'completed';
+  return orderSteps.find((step) => step.id === currentStepId)?.labelKey ?? 'orderStepPlaced';
 }

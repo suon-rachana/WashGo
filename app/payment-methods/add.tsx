@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MenuRow } from '@/src/components/common';
 import { Card } from '@/src/components/ui';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
 
 interface AddOption {
@@ -16,8 +17,8 @@ interface AddOption {
 }
 
 const ADD_OPTIONS: AddOption[] = [
-  { id: 'add-card', label: 'Add Card', icon: 'card-outline' },
   { id: 'link-aba', label: 'Link ABA Pay', icon: 'phone-portrait-outline' },
+  { id: 'link-acleda', label: 'Link ACLEDA', icon: 'business-outline' },
   { id: 'link-wing', label: 'Link Wing', icon: 'wallet-outline' },
   { id: 'use-khqr', label: 'Use KHQR', icon: 'qr-code-outline' },
 ];
@@ -25,12 +26,14 @@ const ADD_OPTIONS: AddOption[] = [
 export default function AddPaymentMethodScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleSelect = (option: AddOption) => {
-    // Mock only — no backend to link a real payment method to.
-    Alert.alert(option.label, `${option.label} has been linked to your account (mock).`, [
-      { text: 'OK', onPress: () => router.back() },
+    // Honest mock — there's no real payment gateway behind this app, so we say
+    // so plainly instead of pretending a real account gets linked.
+    Alert.alert(t('comingSoon'), `${option.label} — account linking isn't available in this prototype yet.`, [
+      { text: 'OK' },
     ]);
   };
 

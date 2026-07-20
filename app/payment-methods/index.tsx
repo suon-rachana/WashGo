@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card } from '@/src/components/ui';
 import { DEFAULT_PAYMENT_METHOD_ID, paymentMethods, type PaymentMethod } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation, type TranslationKey } from '@/src/i18n';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
 
 // Neither the local typed-routes generator nor a running dev server is
@@ -20,9 +21,10 @@ interface PaymentMethodCardProps {
   onSetDefault: () => void;
   colors: ColorScheme;
   styles: ReturnType<typeof createStyles>;
+  t: (key: TranslationKey) => string;
 }
 
-function PaymentMethodCard({ method, isDefault, onSetDefault, colors, styles }: PaymentMethodCardProps) {
+function PaymentMethodCard({ method, isDefault, onSetDefault, colors, styles, t }: PaymentMethodCardProps) {
   return (
     <Card variant="elevated">
       <View style={styles.cardHeader}>
@@ -32,7 +34,8 @@ function PaymentMethodCard({ method, isDefault, onSetDefault, colors, styles }: 
         <View style={styles.cardTextWrap}>
           <View style={styles.cardTitleRow}>
             <Text style={styles.cardLabel}>{method.label}</Text>
-            {isDefault ? <Badge label="Default" variant="primary" /> : null}
+            {isDefault ? <Badge label={t('default')} variant="primary" /> : null}
+            {method.comingSoon ? <Badge label={t('comingSoon')} variant="warning" /> : null}
           </View>
           <Text style={styles.cardDescription}>{method.description}</Text>
         </View>
@@ -43,10 +46,10 @@ function PaymentMethodCard({ method, isDefault, onSetDefault, colors, styles }: 
           onPress={onSetDefault}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel={`Set ${method.label} as default payment method`}
+          accessibilityLabel={`${t('setAsDefault')} ${method.label}`}
           style={styles.setDefaultRow}
         >
-          <Text style={styles.setDefaultText}>Set as Default</Text>
+          <Text style={styles.setDefaultText}>{t('setAsDefault')}</Text>
         </Pressable>
       ) : null}
     </Card>
@@ -56,6 +59,7 @@ function PaymentMethodCard({ method, isDefault, onSetDefault, colors, styles }: 
 export default function PaymentMethodsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [defaultMethodId, setDefaultMethodId] = useState(DEFAULT_PAYMENT_METHOD_ID);
 
@@ -69,7 +73,7 @@ export default function PaymentMethodsScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={styles.title}>Payment Methods</Text>
+        <Text style={styles.title}>{t('paymentMethods')}</Text>
         <Text style={styles.subtitle}>Manage how you pay for pickups.</Text>
       </View>
 
@@ -83,6 +87,7 @@ export default function PaymentMethodsScreen() {
               onSetDefault={() => setDefaultMethodId(method.id)}
               colors={colors}
               styles={styles}
+              t={t}
             />
           ))}
         </View>

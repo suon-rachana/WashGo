@@ -1,23 +1,55 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useMemo, useState, type ComponentProps } from 'react';
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, Button, Card } from '@/src/components/ui';
-import { addresses as mockAddresses, type Address } from '@/src/data/mock';
+import { Badge, Button, Card, EmptyState, ErrorState, LoadingState } from '@/src/components/ui';
+import { isSupabaseDataSource } from '@/src/config/dataSource';
+import { addresses as mockAddresses, type Address as MockAddress } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation, type TranslationKey } from '@/src/i18n';
+import { addressService } from '@/src/services/addressService';
+import type { ServiceErrorCode } from '@/src/services/errors';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import type { AddressRow } from '@/src/types/database';
 
-interface AddressCardProps {
-  address: Address;
-  onEdit: () => void;
-  onDelete: () => void;
-  colors: ColorScheme;
-  styles: ReturnType<typeof createStyles>;
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+interface DisplayAddress {
+  id: string;
+  label: string;
+  detail: string;
+  isDefault: boolean;
+  icon: IconName;
 }
 
-function AddressCard({ address, onEdit, onDelete, colors, styles }: AddressCardProps) {
+function fromMockAddress(address: MockAddress): DisplayAddress {
+  return { id: address.id, label: address.label, detail: address.detail, isDefault: !!address.isDefault, icon: address.icon };
+}
+
+function fromSupabaseAddress(address: AddressRow): DisplayAddress {
+  return {
+    id: address.id,
+    label: address.label,
+    detail: address.address_line,
+    isDefault: address.is_default,
+    icon: 'location-outline',
+  };
+}
+
+interface AddressCardProps {
+  address: DisplayAddress;
+  onEdit: () => void;
+  onDelete: () => void;
+  onSetDefault: () => void;
+  colors: ColorScheme;
+  styles: ReturnType<typeof createStyles>;
+  t: (key: TranslationKey) => string;
+}
+
+function AddressCard({ address, onEdit, onDelete, onSetDefault, colors, styles, t }: AddressCardProps) {
   return (
     <Card variant="elevated">
       <View style={styles.cardHeader}>
@@ -27,25 +59,37 @@ function AddressCard({ address, onEdit, onDelete, colors, styles }: AddressCardP
         <View style={styles.cardTextWrap}>
           <View style={styles.cardTitleRow}>
             <Text style={styles.cardLabel}>{address.label}</Text>
-            {address.isDefault ? <Badge label="Default" variant="primary" /> : null}
+            {address.isDefault ? <Badge label={t('default')} variant="primary" /> : null}
           </View>
           <Text style={styles.cardDetail}>{address.detail}</Text>
         </View>
       </View>
 
+      {!address.isDefault ? (
+        <Pressable
+          onPress={onSetDefault}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`${t('setAsDefault')} ${address.label}`}
+          style={styles.setDefaultRow}
+        >
+          <Text style={styles.setDefaultText}>{t('setAsDefault')}</Text>
+        </Pressable>
+      ) : null}
+
       <View style={styles.cardActions}>
         <Button
-          title="Edit"
+          title={t('editAddress')}
           variant="outline"
           onPress={onEdit}
-          accessibilityLabel={`Edit ${address.label} address`}
+          accessibilityLabel={`${t('editAddress')} ${address.label}`}
           style={styles.actionButton}
         />
         <Button
-          title="Delete"
+          title={t('deleteAddress')}
           variant="outline"
           onPress={onDelete}
-          accessibilityLabel={`Delete ${address.label} address`}
+          accessibilityLabel={`${t('deleteAddress')} ${address.label}`}
           accessibilityHint="Asks for confirmation before removing this address"
           style={styles.actionButton}
         />
@@ -57,20 +101,92 @@ function AddressCard({ address, onEdit, onDelete, colors, styles }: AddressCardP
 export default function SavedAddressesScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [addresses, setAddresses] = useState(mockAddresses);
 
-  const handleEdit = (address: Address) => {
+  const [addresses, setAddresses] = useState<DisplayAddress[]>(
+    isSupabaseDataSource ? [] : mockAddresses.map(fromMockAddress)
+  );
+  const [isLoading, setIsLoading] = useState(isSupabaseDataSource);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<ServiceErrorCode | null>(null);
+
+  const loadAddresses = useCallback(async (isRefresh = false) => {
+    if (!isSupabaseDataSource) return;
+
+    if (isRefresh) setIsRefreshing(true);
+    else setIsLoading(true);
+    setLoadError(null);
+
+    const { data, error } = await addressService.list();
+
+    if (isRefresh) setIsRefreshing(false);
+    else setIsLoading(false);
+
+    if (error) {
+      setLoadError(error);
+      return;
+    }
+    setAddresses(data.map(fromSupabaseAddress));
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAddresses();
+    }, [loadAddresses])
+  );
+
+  const handleEdit = (address: DisplayAddress) => {
     router.push({ pathname: '/addresses/edit', params: { id: address.id } });
   };
 
-  const handleDelete = (address: Address) => {
-    Alert.alert('Delete Address', `Remove "${address.label}" from your saved addresses?`, [
-      { text: 'Cancel', style: 'cancel' },
+  const handleSetDefault = async (address: DisplayAddress) => {
+    if (!isSupabaseDataSource) {
+      setAddresses((prev) => prev.map((item) => ({ ...item, isDefault: item.id === address.id })));
+      return;
+    }
+
+    const previous = addresses;
+    setAddresses((prev) => prev.map((item) => ({ ...item, isDefault: item.id === address.id })));
+    const { error } = await addressService.setDefault(address.id);
+    if (error) {
+      setAddresses(previous);
+      Alert.alert(t('unableToUpdateAddress'), undefined, [{ text: t('cancel'), style: 'cancel' }]);
+    }
+  };
+
+  const handleDelete = (address: DisplayAddress) => {
+    Alert.alert(t('deleteAddress'), `Remove "${address.label}" from your saved addresses?`, [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('deleteAddress'),
         style: 'destructive',
-        onPress: () => setAddresses((prev) => prev.filter((item) => item.id !== address.id)),
+        onPress: async () => {
+          if (!isSupabaseDataSource) {
+            setAddresses((prev) => {
+              const remaining = prev.filter((item) => item.id !== address.id);
+              // Deleting the default address must not leave the list without one —
+              // promote the next remaining address so the UI never shows zero defaults.
+              if (address.isDefault && remaining.length > 0 && !remaining.some((item) => item.isDefault)) {
+                return remaining.map((item, index) => ({ ...item, isDefault: index === 0 }));
+              }
+              return remaining;
+            });
+            return;
+          }
+
+          const { error } = await addressService.remove(address.id);
+          if (error) {
+            Alert.alert(t('unableToDeleteAddress'), undefined, [{ text: t('cancel'), style: 'cancel' }]);
+            return;
+          }
+
+          const remaining = addresses.filter((item) => item.id !== address.id);
+          if (address.isDefault && remaining.length > 0) {
+            await addressService.setDefault(remaining[0].id);
+          }
+          loadAddresses();
+        },
       },
     ]);
   };
@@ -85,33 +201,65 @@ export default function SavedAddressesScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={styles.title}>Saved Addresses</Text>
+        <Text style={styles.title}>{t('savedAddresses')}</Text>
         <Text style={styles.subtitle}>Manage your pickup and delivery locations.</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.list}>
-          {addresses.map((address) => (
-            <AddressCard
-              key={address.id}
-              address={address}
-              onEdit={() => handleEdit(address)}
-              onDelete={() => handleDelete(address)}
-              colors={colors}
-              styles={styles}
-            />
-          ))}
-        </View>
-
-        <Button
-          title="Add Address"
-          fullWidth
-          icon={<Ionicons name="add" size={16} color={colors.onPrimary} />}
-          onPress={handleAdd}
-          accessibilityLabel="Add address"
-          style={styles.addButton}
+      {isLoading ? (
+        <LoadingState message={t('loadingAccount')} />
+      ) : loadError ? (
+        <ErrorState
+          message={loadError === 'not_authenticated' ? t('sessionExpired') : t('unableToLoadAddresses')}
+          retryLabel={t('retry')}
+          onRetry={() => loadAddresses()}
         />
-      </ScrollView>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            isSupabaseDataSource ? (
+              <RefreshControl refreshing={isRefreshing} onRefresh={() => loadAddresses(true)} tintColor={colors.primary} />
+            ) : undefined
+          }
+        >
+          {addresses.length === 0 ? (
+            <EmptyState
+              icon="location-outline"
+              title={t('savedAddresses')}
+              description="You haven't saved any addresses yet."
+              actionLabel={t('addAddress')}
+              onActionPress={handleAdd}
+            />
+          ) : (
+            <>
+              <View style={styles.list}>
+                {addresses.map((address) => (
+                  <AddressCard
+                    key={address.id}
+                    address={address}
+                    onEdit={() => handleEdit(address)}
+                    onDelete={() => handleDelete(address)}
+                    onSetDefault={() => handleSetDefault(address)}
+                    colors={colors}
+                    styles={styles}
+                    t={t}
+                  />
+                ))}
+              </View>
+
+              <Button
+                title={t('addAddress')}
+                fullWidth
+                icon={<Ionicons name="add" size={16} color={colors.onPrimary} />}
+                onPress={handleAdd}
+                accessibilityLabel={t('addAddress')}
+                style={styles.addButton}
+              />
+            </>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -146,6 +294,7 @@ const createStyles = (colors: ColorScheme) =>
     content: {
       paddingHorizontal: Spacing.xl,
       paddingBottom: Spacing.huge,
+      flexGrow: 1,
     },
     list: {
       gap: Spacing.md,
@@ -183,6 +332,15 @@ const createStyles = (colors: ColorScheme) =>
       fontSize: Typography.body.fontSize,
       lineHeight: Typography.body.lineHeight,
       color: colors.textMuted,
+    },
+    setDefaultRow: {
+      alignSelf: 'flex-start',
+      marginBottom: Spacing.md,
+    },
+    setDefaultText: {
+      fontSize: Typography.bodyMedium.fontSize,
+      fontWeight: Typography.bodyMedium.fontWeight,
+      color: colors.primary,
     },
     cardActions: {
       flexDirection: 'row',

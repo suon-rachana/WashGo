@@ -33,7 +33,9 @@ export default function TabLayout() {
         options={{
           title: t('home'),
           tabBarAccessibilityLabel: t('home'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -41,7 +43,9 @@ export default function TabLayout() {
         options={{
           title: t('orders'),
           tabBarAccessibilityLabel: t('orders'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="receipt" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -49,7 +53,9 @@ export default function TabLayout() {
         options={{
           title: t('laundries'),
           tabBarAccessibilityLabel: t('laundries'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="shirt" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'shirt' : 'shirt-outline'} size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -57,7 +63,9 @@ export default function TabLayout() {
         options={{
           title: t('profile'),
           tabBarAccessibilityLabel: t('profile'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-circle" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

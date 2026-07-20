@@ -4,13 +4,19 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, Touchable
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Input } from '@/src/components/ui';
+import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
+import { useAuthStore } from '@/src/store/auth';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { authErrorTranslationKey } from '@/src/utils/authErrorMessages';
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^\+?[0-9\s-]{8,}$/;
 
 interface FormErrors {
   fullName?: string;
+  email?: string;
   phone?: string;
   password?: string;
 }
@@ -18,11 +24,17 @@ interface FormErrors {
 export default function RegisterScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const signUp = useAuthStore((state) => state.signUp);
 
   const validate = () => {
     const nextErrors: FormErrors = {};
@@ -31,6 +43,16 @@ export default function RegisterScreen() {
       nextErrors.fullName = 'Enter your full name';
     } else if (fullName.trim().length < 2) {
       nextErrors.fullName = 'Name must be at least 2 characters';
+    }
+
+    // Email is only required to create a real Supabase account — the
+    // prototype's mock/demo sign-up flow doesn't need one.
+    if (isSupabaseDataSource) {
+      if (!email.trim()) {
+        nextErrors.email = 'Enter your email';
+      } else if (!EMAIL_PATTERN.test(email.trim())) {
+        nextErrors.email = 'Enter a valid email';
+      }
     }
 
     if (!phone.trim()) {
@@ -49,9 +71,29 @@ export default function RegisterScreen() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleContinue = () => {
-    if (validate()) {
+  const handleContinue = async () => {
+    if (isSubmitting || !validate()) return;
+
+    if (!isSupabaseDataSource) {
       router.replace('/(tabs)/home');
+      return;
+    }
+
+    setFormError(null);
+    setIsSubmitting(true);
+    const success = await signUp({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      password,
+    });
+    setIsSubmitting(false);
+
+    if (success) {
+      router.replace('/(tabs)/home');
+    } else {
+      const errorCode = useAuthStore.getState().error;
+      setFormError(t(errorCode ? authErrorTranslationKey(errorCode) : 'somethingWentWrong'));
     }
   };
 
@@ -61,8 +103,11 @@ export default function RegisterScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.title}>Create your account</Text>
-          <Text style={styles.subtitle}>Sign up to get your laundry picked up in minutes.</Text>
+          <View style={styles.header}>
+            <Text style={styles.title}>Create your account</Text>
+            <Text style={styles.subtitle}>Sign up to get your laundry picked up in minutes.</Text>
+            {!isSupabaseDataSource ? <Text style={styles.demoBadge}>{t('demoMode')}</Text> : null}
+          </View>
 
           <View style={styles.form}>
             <Input
@@ -72,7 +117,20 @@ export default function RegisterScreen() {
               value={fullName}
               onChangeText={setFullName}
               error={errors.fullName}
+              editable={!isSubmitting}
             />
+            {isSupabaseDataSource ? (
+              <Input
+                label="Email"
+                placeholder="you@example.com"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+                error={errors.email}
+                editable={!isSubmitting}
+              />
+            ) : null}
             <Input
               label="Phone Number"
               placeholder="012 345 678"
@@ -80,6 +138,7 @@ export default function RegisterScreen() {
               value={phone}
               onChangeText={setPhone}
               error={errors.phone}
+              editable={!isSubmitting}
             />
             <Input
               label="Password"
@@ -88,10 +147,24 @@ export default function RegisterScreen() {
               value={password}
               onChangeText={setPassword}
               error={errors.password}
+              editable={!isSubmitting}
             />
           </View>
 
-          <Button title="Continue" fullWidth onPress={handleContinue} style={styles.continueButton} />
+          {formError ? (
+            <Text style={styles.formError} accessibilityLiveRegion="polite">
+              {formError}
+            </Text>
+          ) : null}
+
+          <Button
+            title={isSubmitting ? t('creatingAccount') : 'Continue'}
+            fullWidth
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            onPress={handleContinue}
+            style={styles.continueButton}
+          />
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
@@ -101,6 +174,7 @@ export default function RegisterScreen() {
               accessibilityRole="link"
               accessibilityLabel="Login"
               accessibilityHint="Opens the login screen"
+              disabled={isSubmitting}
             >
               <Text style={styles.footerLink}>Login</Text>
             </TouchableOpacity>
@@ -125,6 +199,9 @@ const createStyles = (colors: ColorScheme) =>
       justifyContent: 'center',
       paddingHorizontal: Spacing.xl,
     },
+    header: {
+      marginBottom: Spacing.xxl,
+    },
     title: {
       fontSize: Typography.headline.fontSize,
       lineHeight: Typography.headline.lineHeight,
@@ -137,11 +214,22 @@ const createStyles = (colors: ColorScheme) =>
       lineHeight: Typography.body.lineHeight,
       fontWeight: Typography.body.fontWeight,
       color: colors.textMuted,
-      marginBottom: Spacing.xxl,
+    },
+    demoBadge: {
+      fontSize: Typography.caption.fontSize,
+      lineHeight: Typography.caption.lineHeight,
+      color: colors.primary,
+      marginTop: Spacing.xxs,
     },
     form: {
       gap: Spacing.md,
       marginBottom: Spacing.xl,
+    },
+    formError: {
+      fontSize: Typography.body.fontSize,
+      lineHeight: Typography.body.lineHeight,
+      color: colors.danger,
+      marginBottom: Spacing.md,
     },
     continueButton: {
       marginBottom: Spacing.xl,

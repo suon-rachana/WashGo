@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { ComponentProps, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,8 +10,9 @@ import { Badge, Button, Card } from '@/src/components/ui';
 import {
   addresses,
   dateOptions,
+  getOrderById,
+  getOrderStatusLabelKey,
   laundries,
-  mockOrders,
   orderSteps,
   promotions,
   services,
@@ -19,6 +20,7 @@ import {
   timeOptions,
 } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
 
@@ -74,12 +76,22 @@ function PriceRow({ label, value, emphasis = false, positive = false, styles }: 
 export default function OrderDetailsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { orderId } = useLocalSearchParams<{ orderId?: string }>();
-  const order = mockOrders.find((item) => item.id === orderId);
+  const order = getOrderById(orderId);
 
   const handleBackToHome = () => {
     router.replace('/(tabs)/home');
+  };
+
+  const handleTrackOrder = () => {
+    // `/tracking` is an index route; see the Href-cast note in app/(tabs)/home.tsx —
+    // the local typed-routes generator doesn't collapse index files to their parent path.
+    router.push({
+      pathname: '/tracking',
+      params: { orderId: order?.id },
+    } as unknown as Href);
   };
 
   if (!order) {
@@ -89,10 +101,10 @@ export default function OrderDetailsScreen() {
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </Pressable>
-          <Text style={styles.title}>Order Details</Text>
+          <Text style={styles.title}>{t('orderDetails')}</Text>
         </View>
         <View style={styles.notFound}>
-          <Text style={styles.notFoundText}>This order could not be found.</Text>
+          <Text style={styles.notFoundText}>{t('orderNotFound')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -107,7 +119,8 @@ export default function OrderDetailsScreen() {
   const selectedServiceIds = order.serviceIds.split(',').filter(Boolean);
   const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));
 
-  const currentStep = orderSteps.find((step) => step.id === order.currentStepId);
+  const timelineSteps = orderSteps.map((step) => ({ id: step.id, label: t(step.labelKey) }));
+  const statusLabel = t(getOrderStatusLabelKey(order.status, order.currentStepId));
   const { laundryFee, pickupFee, returnDeliveryFee, discountAmount, total } = estimateOrderTotal(
     selectedServices,
     promotions[0]
@@ -120,7 +133,7 @@ export default function OrderDetailsScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back" style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={styles.title}>Order Details</Text>
+        <Text style={styles.title}>{t('orderDetails')}</Text>
         <Text style={styles.subtitle}>All the details for your confirmed order.</Text>
       </View>
 
@@ -128,7 +141,7 @@ export default function OrderDetailsScreen() {
         <Card variant="elevated" style={styles.statusCard}>
           <View style={styles.statusHeader}>
             <Text style={styles.orderId}>{order.id}</Text>
-            <Badge label={currentStep?.label ?? 'Processing'} variant="primary" />
+            <Badge label={statusLabel} variant="primary" />
           </View>
         </Card>
 
@@ -219,7 +232,7 @@ export default function OrderDetailsScreen() {
         <View style={styles.section}>
           <SectionHeader title="Timeline Preview" />
           <Card variant="outlined">
-            <OrderTimeline steps={orderSteps} currentStepId={order.currentStepId} />
+            <OrderTimeline steps={timelineSteps} currentStepId={order.currentStepId} />
           </Card>
         </View>
 
@@ -251,6 +264,14 @@ export default function OrderDetailsScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
+        {order.status === 'active' ? (
+          <Button
+            title={t('trackOrder')}
+            fullWidth
+            onPress={handleTrackOrder}
+            accessibilityHint="Navigates to order tracking"
+          />
+        ) : null}
         <View style={styles.footerRow}>
           <Button
             title="Contact Laundry"
@@ -268,7 +289,7 @@ export default function OrderDetailsScreen() {
           />
         </View>
         <Button
-          title="Back to Home"
+          title={t('backToHome')}
           fullWidth
           onPress={handleBackToHome}
           accessibilityHint="Returns to the home screen"
