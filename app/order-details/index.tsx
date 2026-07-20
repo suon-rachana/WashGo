@@ -23,6 +23,7 @@ import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
+import { resetToHome } from '@/src/utils/resetToTab';
 
 interface InfoRowProps {
   icon: ComponentProps<typeof Ionicons>['name'];
@@ -82,7 +83,10 @@ export default function OrderDetailsScreen() {
   const order = getOrderById(orderId);
 
   const handleBackToHome = () => {
-    router.replace('/(tabs)/home');
+    // Ends the booking/order-review flow — clears any pushed screens above
+    // Home rather than just swapping this one screen. See
+    // src/utils/resetToTab.ts for why a plain replace() isn't enough.
+    resetToHome();
   };
 
   const handleTrackOrder = () => {

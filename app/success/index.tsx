@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/src/components/ui';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { resetToHome } from '@/src/utils/resetToTab';
 
 export default function PickupSuccessScreen() {
   const router = useRouter();
@@ -24,7 +25,10 @@ export default function PickupSuccessScreen() {
   };
 
   const handleBackToHome = () => {
-    router.replace('/(tabs)/home');
+    // Ends the booking flow — clears the entire pushed stack (Laundry
+    // Details → ... → Success) rather than just swapping this one screen.
+    // See src/utils/resetToTab.ts for why a plain replace() isn't enough.
+    resetToHome();
   };
 
   return (

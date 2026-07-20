@@ -22,6 +22,7 @@ import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTranslation } from '@/src/i18n';
 import { ColorScheme, Spacing, Typography } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
+import { resetToHome } from '@/src/utils/resetToTab';
 
 export default function OrderTrackingScreen() {
   const router = useRouter();
@@ -34,7 +35,10 @@ export default function OrderTrackingScreen() {
   const order = getOrderById(orderId) ?? activeOrders[0];
 
   const handleBackToHome = () => {
-    router.replace('/(tabs)/home');
+    // Ends the booking flow — clears the entire pushed stack (Laundry
+    // Details → ... → Tracking) rather than just swapping this one screen.
+    // See src/utils/resetToTab.ts for why a plain replace() isn't enough.
+    resetToHome();
   };
 
   if (!order) {
