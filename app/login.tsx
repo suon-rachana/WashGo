@@ -6,9 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Input } from '@/src/components/ui';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { useAuthStore } from '@/src/store/auth';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 import { authErrorTranslationKey } from '@/src/utils/authErrorMessages';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,8 +23,9 @@ interface FormErrors {
 export default function LoginScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
@@ -146,7 +148,7 @@ export default function LoginScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -164,21 +166,24 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xxl,
     },
     title: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
+      fontSize: typography.headline.fontSize,
+      lineHeight: typography.headline.lineHeight,
+      fontWeight: typography.headline.fontWeight,
+      fontFamily: typography.headline.fontFamily,
       color: colors.text,
       marginBottom: Spacing.xs,
     },
     subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      fontWeight: Typography.body.fontWeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontWeight: typography.body.fontWeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     demoBadge: {
-      fontSize: Typography.caption.fontSize,
-      lineHeight: Typography.caption.lineHeight,
+      fontSize: typography.caption.fontSize,
+      lineHeight: typography.caption.lineHeight,
+      fontFamily: typography.caption.fontFamily,
       color: colors.primary,
       marginTop: Spacing.xxs,
     },
@@ -187,8 +192,9 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xl,
     },
     formError: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.danger,
       marginBottom: Spacing.md,
     },
@@ -201,12 +207,14 @@ const createStyles = (colors: ColorScheme) =>
       alignItems: 'center',
     },
     footerText: {
-      fontSize: Typography.bodyMedium.fontSize,
+      fontSize: typography.bodyMedium.fontSize,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.textMuted,
     },
     footerLink: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
   });

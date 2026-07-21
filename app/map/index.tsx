@@ -10,8 +10,9 @@ import { Button, Card } from '@/src/components/ui';
 import { mapLocationAddress } from '@/src/data/mock';
 import { useCurrentLocation } from '@/src/hooks/useCurrentLocation';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 import { formatCoordinates, type Coordinates } from '@/src/utils/coordinates';
 
 // Default pickup coordinates for Siem Reap, Cambodia — used as the initial
@@ -30,7 +31,8 @@ const INITIAL_REGION: Region = {
 export default function ChooseLocationScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { t } = useTranslation();
   const { laundryId, serviceIds } = useLocalSearchParams<{ laundryId?: string; serviceIds?: string }>();
 
@@ -103,7 +105,7 @@ export default function ChooseLocationScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     previewCard: {
       marginBottom: Spacing.xl,
@@ -126,13 +128,15 @@ const createStyles = (colors: ColorScheme) =>
       flex: 1,
     },
     previewTitle: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
       marginBottom: Spacing.xxs,
     },
     previewSubtitle: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     coordRow: {
@@ -144,12 +148,14 @@ const createStyles = (colors: ColorScheme) =>
       borderTopColor: colors.border,
     },
     coordLabel: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     coordValue: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
   });

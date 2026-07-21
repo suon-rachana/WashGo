@@ -11,9 +11,10 @@ import { Chip, EmptyState, Input } from '@/src/components/ui';
 import { categories, laundries, mockUser, promotions, services, type Laundry } from '@/src/data/mock';
 import { getUnreadNotificationCount } from '@/src/data/mock/notifications';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { useNotificationsStore } from '@/src/store/notifications';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 import { matchesSearch } from '@/src/utils/search';
 
 // `/shops` and `/notifications` are index routes; the local typed-routes
@@ -26,7 +27,8 @@ const NOTIFICATIONS_HREF = '/notifications' as Href;
 export default function HomeScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { t } = useTranslation();
   const promotion = promotions[0];
   const [searchQuery, setSearchQuery] = useState('');
@@ -158,7 +160,7 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -194,20 +196,23 @@ const createStyles = (colors: ColorScheme) =>
       right: -4,
     },
     locationText: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
     },
     greeting: {
-      fontSize: Typography.headline.fontSize,
-      lineHeight: Typography.headline.lineHeight,
-      fontWeight: Typography.headline.fontWeight,
+      fontSize: typography.headline.fontSize,
+      lineHeight: typography.headline.lineHeight,
+      fontWeight: typography.headline.fontWeight,
+      fontFamily: typography.headline.fontFamily,
       color: colors.text,
       marginBottom: Spacing.xxs,
     },
     subtitle: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
-      fontWeight: Typography.body.fontWeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontWeight: typography.body.fontWeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.xl,
     },

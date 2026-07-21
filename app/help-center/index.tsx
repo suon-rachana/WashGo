@@ -6,8 +6,9 @@ import { AppScreen } from '@/src/components/layout';
 import { Button, Card, EmptyState, Input } from '@/src/components/ui';
 import { faqs, type Faq } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 import { matchesSearch } from '@/src/utils/search';
 
 interface FaqRowProps {
@@ -40,8 +41,9 @@ function FaqRow({ faq, expanded, onToggle, colors, styles }: FaqRowProps) {
 
 export default function HelpCenterScreen() {
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -120,7 +122,7 @@ export default function HelpCenterScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     search: {
       marginBottom: Spacing.xl,
@@ -137,13 +139,15 @@ const createStyles = (colors: ColorScheme) =>
     },
     question: {
       flex: 1,
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
     answer: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       marginTop: Spacing.sm,
     },
@@ -151,15 +155,17 @@ const createStyles = (colors: ColorScheme) =>
       marginTop: Spacing.md,
     },
     sectionTitle: {
-      fontSize: Typography.subtitle.fontSize,
-      lineHeight: Typography.subtitle.lineHeight,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      lineHeight: typography.subtitle.lineHeight,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
       marginBottom: Spacing.md,
     },
     contactDescription: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.md,
     },

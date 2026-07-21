@@ -8,9 +8,10 @@ import { Chip, EmptyState } from '@/src/components/ui';
 import { getOrderById } from '@/src/data/mock';
 import { getUnreadNotificationCount, type WashGoNotification } from '@/src/data/mock/notifications';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { useNotificationsStore } from '@/src/store/notifications';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 
 type NotificationFilter = 'all' | 'unread';
 
@@ -23,8 +24,9 @@ const SETTINGS_HREF = '/settings' as Href;
 export default function NotificationsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const [filter, setFilter] = useState<NotificationFilter>('all');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -140,7 +142,7 @@ export default function NotificationsScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     content: {
       paddingHorizontal: Spacing.xl,
@@ -148,8 +150,9 @@ const createStyles = (colors: ColorScheme) =>
       paddingBottom: 0,
     },
     markAllText: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
     filterRow: {

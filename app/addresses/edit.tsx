@@ -8,18 +8,20 @@ import { ErrorState, LoadingState } from '@/src/components/ui';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { addresses as mockAddresses } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { addressService } from '@/src/services/addressService';
 import type { ServiceErrorCode } from '@/src/services/errors';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 import type { AddressRow } from '@/src/types/database';
 import { combineAddressLine } from '@/src/utils/addressLine';
 
 export default function EditAddressScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   const mockAddress = isSupabaseDataSource ? undefined : mockAddresses.find((item) => item.id === id);
@@ -128,11 +130,12 @@ export default function EditAddressScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     errorText: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.danger,
       marginBottom: Spacing.md,
     },
@@ -143,7 +146,8 @@ const createStyles = (colors: ColorScheme) =>
       paddingHorizontal: Spacing.xl,
     },
     notFoundText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       textAlign: 'center',
     },

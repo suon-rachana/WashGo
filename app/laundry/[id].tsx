@@ -9,15 +9,17 @@ import { AppScreen } from '@/src/components/layout';
 import { Badge, Button, Card, Chip } from '@/src/components/ui';
 import { laundries } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 
 export default function LaundryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const laundry = laundries.find((item) => item.id === id);
 
   if (!laundry) {
@@ -146,7 +148,7 @@ export default function LaundryDetailScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     notFound: {
       flex: 1,
@@ -155,7 +157,8 @@ const createStyles = (colors: ColorScheme) =>
       paddingHorizontal: Spacing.xl,
     },
     notFoundText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       textAlign: 'center',
     },
@@ -168,9 +171,10 @@ const createStyles = (colors: ColorScheme) =>
     },
     name: {
       flex: 1,
-      fontSize: Typography.title.fontSize,
-      lineHeight: Typography.title.lineHeight,
-      fontWeight: Typography.title.fontWeight,
+      fontSize: typography.title.fontSize,
+      lineHeight: typography.title.lineHeight,
+      fontWeight: typography.title.fontWeight,
+      fontFamily: typography.title.fontFamily,
       color: colors.text,
     },
     metaRow: {
@@ -180,11 +184,13 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xl,
     },
     metaText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     dot: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       marginHorizontal: Spacing.xxs,
     },
@@ -195,9 +201,10 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: 0,
     },
     sectionTitle: {
-      fontSize: Typography.subtitle.fontSize,
-      lineHeight: Typography.subtitle.lineHeight,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      lineHeight: typography.subtitle.lineHeight,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
       marginBottom: Spacing.md,
     },
@@ -218,12 +225,14 @@ const createStyles = (colors: ColorScheme) =>
       borderBottomColor: colors.border,
     },
     priceLabel: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.text,
     },
     priceValue: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
     infoRow: {
@@ -247,13 +256,15 @@ const createStyles = (colors: ColorScheme) =>
       flex: 1,
     },
     infoLabel: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.xxs,
     },
     infoValue: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
     reviewsHeader: {
@@ -263,7 +274,8 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.md,
     },
     reviewsCount: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
     },
     reviewsList: {
@@ -276,8 +288,9 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xs,
     },
     reviewAuthor: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
     reviewRating: {
@@ -286,12 +299,14 @@ const createStyles = (colors: ColorScheme) =>
       gap: Spacing.xxs,
     },
     reviewRatingText: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
     },
     reviewComment: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
   });

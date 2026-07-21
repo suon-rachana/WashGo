@@ -6,13 +6,15 @@ import { SectionHeader } from '@/src/components/common';
 import { AppScreen } from '@/src/components/layout';
 import { Card } from '@/src/components/ui';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 
 export default function LegalScreen() {
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
 
   return (
     <AppScreen title={t('termsAndPrivacy')}>
@@ -51,7 +53,7 @@ export default function LegalScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     noticeCard: {
       marginBottom: Spacing.xl,
@@ -63,8 +65,9 @@ const createStyles = (colors: ColorScheme) =>
     },
     noticeText: {
       flex: 1,
-      fontSize: Typography.caption.fontSize,
-      lineHeight: Typography.caption.lineHeight,
+      fontSize: typography.caption.fontSize,
+      lineHeight: typography.caption.lineHeight,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
     },
     section: {
@@ -74,8 +77,9 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xl,
     },
     paragraph: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
   });

@@ -5,9 +5,10 @@ import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { AppScreen } from '@/src/components/layout';
 import { Card } from '@/src/components/ui';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { useSettingsStore } from '@/src/store/settingsStore';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 
 interface SettingRowProps {
   icon: ComponentProps<typeof Ionicons>['name'];
@@ -65,7 +66,8 @@ function SettingRow({
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { t } = useTranslation();
   const [pushEnabled, setPushEnabled] = useState(true);
 
@@ -159,12 +161,13 @@ export default function SettingsScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     sectionLabel: {
-      fontSize: Typography.label.fontSize,
-      fontWeight: Typography.label.fontWeight,
-      letterSpacing: Typography.label.letterSpacing,
+      fontSize: typography.label.fontSize,
+      fontWeight: typography.label.fontWeight,
+      letterSpacing: typography.label.letterSpacing,
+      fontFamily: typography.label.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.xs,
       textTransform: 'uppercase',
@@ -195,17 +198,20 @@ const createStyles = (colors: ColorScheme) =>
       flex: 1,
     },
     rowLabel: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.text,
     },
     rowDescription: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
       marginTop: Spacing.xxs,
     },
     rowValue: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.textMuted,
     },
   });

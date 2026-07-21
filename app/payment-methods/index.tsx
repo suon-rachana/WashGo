@@ -7,8 +7,9 @@ import { AppScreen } from '@/src/components/layout';
 import { Badge, Button, Card } from '@/src/components/ui';
 import { DEFAULT_PAYMENT_METHOD_ID, paymentMethods, type PaymentMethod } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation, type TranslationKey } from '@/src/i18n';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 
 // Neither the local typed-routes generator nor a running dev server is
 // available right now to pick up this brand-new route, so the literal string
@@ -59,8 +60,9 @@ function PaymentMethodCard({ method, isDefault, onSetDefault, colors, styles, t 
 export default function PaymentMethodsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const [defaultMethodId, setDefaultMethodId] = useState(DEFAULT_PAYMENT_METHOD_ID);
 
   const handleAdd = () => {
@@ -95,7 +97,7 @@ export default function PaymentMethodsScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     list: {
       gap: Spacing.md,
@@ -123,14 +125,16 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xxs,
     },
     cardLabel: {
-      fontSize: Typography.subtitle.fontSize,
-      lineHeight: Typography.subtitle.lineHeight,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      lineHeight: typography.subtitle.lineHeight,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
     },
     cardDescription: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     setDefaultRow: {
@@ -138,8 +142,9 @@ const createStyles = (colors: ColorScheme) =>
       marginTop: Spacing.md,
     },
     setDefaultText: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
     addButton: {

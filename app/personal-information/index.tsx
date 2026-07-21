@@ -7,11 +7,12 @@ import { Button, ErrorState, Input, LoadingState } from '@/src/components/ui';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { mockUser } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { profileService } from '@/src/services/profileService';
 import type { ServiceErrorCode } from '@/src/services/errors';
 import { useAuthStore } from '@/src/store/auth';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^\+?[0-9\s-]{8,}$/;
@@ -24,8 +25,9 @@ interface FormErrors {
 
 export default function PersonalInformationScreen() {
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
 
   const [fullName, setFullName] = useState(isSupabaseDataSource ? '' : mockUser.fullName);
   const [phone, setPhone] = useState(isSupabaseDataSource ? '' : mockUser.phone);
@@ -195,7 +197,7 @@ export default function PersonalInformationScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     form: {
       gap: Spacing.md,
@@ -208,7 +210,8 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.md,
     },
     saveErrorText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.danger,
       flexShrink: 1,
     },
@@ -219,7 +222,8 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.md,
     },
     savedText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.success,
     },
     saveButton: {

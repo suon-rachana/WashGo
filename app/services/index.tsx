@@ -10,8 +10,9 @@ import { ServiceCard, ServiceSummary } from '@/src/components/services';
 import { Button, EmptyState, Input } from '@/src/components/ui';
 import { laundries, services } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 import type { Service } from '@/src/types/service';
 import { matchesSearch } from '@/src/utils/search';
 
@@ -20,8 +21,9 @@ const INSTRUCTIONS_MAX_LENGTH = 200;
 export default function ChooseServicesScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { laundryId } = useLocalSearchParams<{ laundryId?: string }>();
   const laundry = laundries.find((item) => item.id === laundryId);
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,11 +136,12 @@ export default function ChooseServicesScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     laundryName: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.lg,
     },
@@ -146,7 +149,8 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.sm,
     },
     countText: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.md,
     },
@@ -161,9 +165,10 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: 0,
     },
     sectionTitle: {
-      fontSize: Typography.subtitle.fontSize,
-      lineHeight: Typography.subtitle.lineHeight,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      lineHeight: typography.subtitle.lineHeight,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
       marginBottom: Spacing.md,
     },

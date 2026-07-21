@@ -11,11 +11,12 @@ import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { mockUser } from '@/src/data/mock';
 import { getUnreadNotificationCount } from '@/src/data/mock/notifications';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
 import { useAuthStore } from '@/src/store/auth';
 import { useNotificationsStore } from '@/src/store/notifications';
 import { useSettingsStore } from '@/src/store/settingsStore';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 
 // These routes are index routes (or, for `/(tabs)/orders`, a route inside a
 // group); the local typed-routes generator doesn't collapse these to a plain
@@ -35,7 +36,8 @@ const ABOUT_HREF = '/about' as Href;
 export default function ProfileScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { t } = useTranslation();
 
   const themeMode = useSettingsStore((state) => state.themeMode);
@@ -212,7 +214,7 @@ export default function ProfileScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -228,15 +230,17 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xl,
     },
     name: {
-      fontSize: Typography.title.fontSize,
-      lineHeight: Typography.title.lineHeight,
-      fontWeight: Typography.title.fontWeight,
+      fontSize: typography.title.fontSize,
+      lineHeight: typography.title.lineHeight,
+      fontWeight: typography.title.fontWeight,
+      fontFamily: typography.title.fontFamily,
       color: colors.text,
       marginTop: Spacing.md,
       marginBottom: Spacing.xxs,
     },
     contactLine: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     memberBadge: {
@@ -247,9 +251,10 @@ const createStyles = (colors: ColorScheme) =>
       alignSelf: 'stretch',
     },
     sectionLabel: {
-      fontSize: Typography.label.fontSize,
-      fontWeight: Typography.label.fontWeight,
-      letterSpacing: Typography.label.letterSpacing,
+      fontSize: typography.label.fontSize,
+      fontWeight: typography.label.fontWeight,
+      letterSpacing: typography.label.letterSpacing,
+      fontFamily: typography.label.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.xs,
       textTransform: 'uppercase',

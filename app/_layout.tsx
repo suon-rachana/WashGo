@@ -1,5 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
 import { Stack, useRootNavigationState, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
@@ -9,9 +11,14 @@ import 'react-native-reanimated';
 import { LoadingState } from '@/src/components/ui';
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useAuthStore } from '@/src/store/auth';
 import { useSettingsStore } from '@/src/store/settingsStore';
-import { Typography } from '@/src/theme';
+import { NOTO_SANS_KHMER_FONTS } from '@/src/theme/fonts';
+
+// Keeps the native splash screen up while the Khmer font files load, instead
+// of a flash of system-font Khmer text that then swaps to Noto Sans Khmer.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Supabase-mode only: keeps unauthenticated users out of the customer tabs
 // and bounces an already-authenticated user away from login/register. Mock
@@ -45,15 +52,33 @@ function useAuthNavigationGuard() {
 
 export default function RootLayout() {
   const themeMode = useSettingsStore((state) => state.themeMode);
+  const language = useSettingsStore((state) => state.language);
   const colors = useThemeColors();
+  const typography = useTypography();
   const initialize = useAuthStore((state) => state.initialize);
   const isInitializing = useAuthStore((state) => state.isInitializing);
+  const [fontsLoaded, fontError] = useFonts(NOTO_SANS_KHMER_FONTS);
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
   useAuthNavigationGuard();
+
+  useEffect(() => {
+    // fontError still hides the splash screen — English continues to render
+    // fine on the system font, so a Khmer font load failure shouldn't strand
+    // the whole app behind the splash screen.
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    // Native splash screen (see app.json's expo-splash-screen plugin) is
+    // still visible at this point — nothing to render yet.
+    return null;
+  }
 
   if (isSupabaseDataSource && isInitializing) {
     return (
@@ -86,8 +111,13 @@ export default function RootLayout() {
           headerTintColor: colors.text,
           headerStyle: { backgroundColor: colors.background },
           headerTitleStyle: {
-            fontSize: Typography.subtitle.fontSize,
-            fontWeight: Typography.subtitle.fontWeight,
+            // Native header height is fixed by the OS, not by RN's line-height
+            // model — a couple points smaller gives long Khmer titles more
+            // horizontal room and avoids clipping/overlapping header actions,
+            // per the design's "slightly smaller Khmer header font size" rule.
+            fontSize: language === 'km' ? typography.subtitle.fontSize - 2 : typography.subtitle.fontSize,
+            fontWeight: typography.subtitle.fontWeight,
+            fontFamily: typography.subtitle.fontFamily,
           },
         }}
       >

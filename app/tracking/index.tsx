@@ -18,16 +18,18 @@ import {
   services,
 } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Spacing } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
 import { resetToHome } from '@/src/utils/resetToTab';
 
 export default function OrderTrackingScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { orderId } = useLocalSearchParams<{ orderId?: string }>();
   // Falls back to the first active mock order when no orderId is passed, so the
   // booking flow (which doesn't always thread an id through yet) still has something to show.
@@ -147,7 +149,7 @@ export default function OrderTrackingScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     notFound: {
       flex: 1,
@@ -156,7 +158,8 @@ const createStyles = (colors: ColorScheme) =>
       paddingHorizontal: Spacing.xl,
     },
     notFoundText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       textAlign: 'center',
     },
@@ -167,14 +170,16 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xs,
     },
     orderId: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.textMuted,
     },
     shopName: {
-      fontSize: Typography.title.fontSize,
-      lineHeight: Typography.title.lineHeight,
-      fontWeight: Typography.title.fontWeight,
+      fontSize: typography.title.fontSize,
+      lineHeight: typography.title.lineHeight,
+      fontWeight: typography.title.fontWeight,
+      fontFamily: typography.title.fontFamily,
       color: colors.text,
     },
     section: {
@@ -184,13 +189,15 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: 0,
     },
     previewLabel: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.sm,
     },
     previewLabelEmphasis: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
     servicesRow: {
@@ -211,12 +218,14 @@ const createStyles = (colors: ColorScheme) =>
       marginTop: Spacing.sm,
     },
     previewValue: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.text,
     },
     previewValueEmphasis: {
-      fontSize: Typography.subtitle.fontSize,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.primary,
     },
   });

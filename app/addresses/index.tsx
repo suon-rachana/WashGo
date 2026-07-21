@@ -8,11 +8,12 @@ import { Badge, Button, Card, EmptyState, ErrorState, LoadingState } from '@/src
 import { isSupabaseDataSource } from '@/src/config/dataSource';
 import { addresses as mockAddresses, type Address as MockAddress } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation, type TranslationKey } from '@/src/i18n';
 import { AppScreen } from '@/src/components/layout';
 import { addressService } from '@/src/services/addressService';
 import type { ServiceErrorCode } from '@/src/services/errors';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 import type { AddressRow } from '@/src/types/database';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -101,8 +102,9 @@ function AddressCard({ address, onEdit, onDelete, onSetDefault, colors, styles, 
 export default function SavedAddressesScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
 
   const [addresses, setAddresses] = useState<DisplayAddress[]>(
     isSupabaseDataSource ? [] : mockAddresses.map(fromMockAddress)
@@ -251,7 +253,7 @@ export default function SavedAddressesScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     list: {
       gap: Spacing.md,
@@ -280,14 +282,16 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.xxs,
     },
     cardLabel: {
-      fontSize: Typography.subtitle.fontSize,
-      lineHeight: Typography.subtitle.lineHeight,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      lineHeight: typography.subtitle.lineHeight,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
     },
     cardDetail: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     setDefaultRow: {
@@ -295,8 +299,9 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.md,
     },
     setDefaultText: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
     cardActions: {

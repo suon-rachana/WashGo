@@ -3,12 +3,15 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { Spacing, Typography } from '@/src/theme';
+import { Spacing } from '@/src/theme';
 
 export default function TabLayout() {
   const colors = useThemeColors();
-  const { t } = useTranslation();
+  const typography = useTypography();
+  const { t, language } = useTranslation();
+  const isKhmer = language === 'km';
 
   return (
     <Tabs
@@ -23,8 +26,11 @@ export default function TabLayout() {
         headerTintColor: colors.text,
         headerStyle: { backgroundColor: colors.background },
         headerTitleStyle: {
-          fontSize: Typography.subtitle.fontSize,
-          fontWeight: Typography.subtitle.fontWeight,
+          // See app/_layout.tsx for why Khmer gets a couple points knocked
+          // off the header title size.
+          fontSize: isKhmer ? typography.subtitle.fontSize - 2 : typography.subtitle.fontSize,
+          fontWeight: typography.subtitle.fontWeight,
+          fontFamily: typography.subtitle.fontFamily,
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
@@ -33,11 +39,19 @@ export default function TabLayout() {
           borderTopColor: colors.border,
         },
         tabBarItemStyle: {
-          paddingTop: Spacing.xxs,
+          // Khmer labels sit taller (see typography.ts's khmerLineHeightScale)
+          // and were reading as crowded against the icon above them — a touch
+          // more top padding is enough headroom; English is untouched.
+          paddingTop: isKhmer ? Spacing.xs : Spacing.xxs,
         },
         tabBarLabelStyle: {
-          fontSize: Typography.label.fontSize,
-          fontWeight: Typography.label.fontWeight,
+          fontSize: typography.label.fontSize,
+          // Only set an explicit lineHeight for Khmer (its taller
+          // khmerLineHeightScale value) — leaving it unset for English
+          // preserves the exact native default line metrics it had before.
+          ...(isKhmer ? { lineHeight: typography.label.lineHeight } : null),
+          fontWeight: typography.label.fontWeight,
+          fontFamily: typography.label.fontFamily,
         },
       }}>
       <Tabs.Screen

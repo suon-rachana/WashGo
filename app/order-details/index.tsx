@@ -20,8 +20,9 @@ import {
   timeOptions,
 } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 import { estimateOrderTotal } from '@/src/utils/estimateOrderTotal';
 
 interface InfoRowProps {
@@ -76,8 +77,9 @@ function PriceRow({ label, value, emphasis = false, positive = false, styles }: 
 export default function OrderDetailsScreen() {
   const router = useRouter();
   const colors = useThemeColors();
+  const typography = useTypography();
   const { t } = useTranslation();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { orderId } = useLocalSearchParams<{ orderId?: string }>();
   const order = getOrderById(orderId);
   const [isHelpVisible, setIsHelpVisible] = useState(false);
@@ -301,7 +303,7 @@ export default function OrderDetailsScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     notFound: {
       flex: 1,
@@ -310,7 +312,8 @@ const createStyles = (colors: ColorScheme) =>
       paddingHorizontal: Spacing.xl,
     },
     notFoundText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       textAlign: 'center',
     },
@@ -323,8 +326,9 @@ const createStyles = (colors: ColorScheme) =>
       justifyContent: 'space-between',
     },
     orderId: {
-      fontSize: Typography.subtitle.fontSize,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
     },
     section: {
@@ -351,22 +355,26 @@ const createStyles = (colors: ColorScheme) =>
       flex: 1,
     },
     infoLabel: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
       marginBottom: Spacing.xxs,
     },
     infoValue: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
     infoSubValue: {
-      fontSize: Typography.caption.fontSize,
+      fontSize: typography.caption.fontSize,
+      fontFamily: typography.caption.fontFamily,
       color: colors.textMuted,
       marginTop: Spacing.xxs,
     },
     emptyText: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
       textAlign: 'center',
       paddingVertical: Spacing.lg,
@@ -384,12 +392,14 @@ const createStyles = (colors: ColorScheme) =>
       borderBottomColor: colors.border,
     },
     serviceLabel: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.text,
     },
     serviceValue: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
     priceRow: {
@@ -399,21 +409,25 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.sm,
     },
     priceLabel: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
     priceLabelEmphasis: {
-      fontSize: Typography.subtitle.fontSize,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
     },
     priceValue: {
-      fontSize: Typography.body.fontSize,
+      fontSize: typography.body.fontSize,
+      fontFamily: typography.body.fontFamily,
       color: colors.text,
     },
     priceValueEmphasis: {
-      fontSize: Typography.subtitle.fontSize,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.primary,
     },
     priceValuePositive: {
@@ -425,8 +439,9 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: Spacing.sm,
     },
     notesText: {
-      fontSize: Typography.body.fontSize,
-      lineHeight: Typography.body.lineHeight,
+      fontSize: typography.body.fontSize,
+      lineHeight: typography.body.lineHeight,
+      fontFamily: typography.body.fontFamily,
       color: colors.textMuted,
     },
   });

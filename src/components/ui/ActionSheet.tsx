@@ -4,7 +4,8 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useThemeColors } from '@/src/hooks/useThemeColors';
-import { ColorScheme, Radius, Shadows, Spacing, Typography } from '@/src/theme';
+import { useTypography } from '@/src/hooks/useTypography';
+import { ColorScheme, Radius, Shadows, Spacing } from '@/src/theme';
 
 export interface ActionSheetOption {
   label: string;
@@ -26,8 +27,9 @@ export interface ActionSheetProps {
 // couldn't cleanly support more than ~3 options across both platforms.
 export function ActionSheet({ visible, onClose, options, cancelLabel, title }: ActionSheetProps) {
   const colors = useThemeColors();
+  const typography = useTypography();
   const insets = useSafeAreaInsets();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
 
   const handleOptionPress = (option: ActionSheetOption) => {
     onClose();
@@ -80,7 +82,7 @@ export function ActionSheet({ visible, onClose, options, cancelLabel, title }: A
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     backdrop: {
       flex: 1,
@@ -96,9 +98,10 @@ const createStyles = (colors: ColorScheme) =>
       ...Shadows.lg,
     },
     title: {
-      fontSize: Typography.label.fontSize,
-      fontWeight: Typography.label.fontWeight,
-      letterSpacing: Typography.label.letterSpacing,
+      fontSize: typography.label.fontSize,
+      fontWeight: typography.label.fontWeight,
+      letterSpacing: typography.label.letterSpacing,
+      fontFamily: typography.label.fontFamily,
       color: colors.textMuted,
       textTransform: 'uppercase',
       textAlign: 'center',
@@ -130,8 +133,9 @@ const createStyles = (colors: ColorScheme) =>
       marginRight: Spacing.xs,
     },
     optionLabel: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
     optionLabelDestructive: {
@@ -147,8 +151,9 @@ const createStyles = (colors: ColorScheme) =>
       justifyContent: 'center',
     },
     cancelLabel: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.text,
     },
   });

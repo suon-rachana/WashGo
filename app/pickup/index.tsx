@@ -8,8 +8,9 @@ import { AppScreen } from '@/src/components/layout';
 import { Button, Input } from '@/src/components/ui';
 import { addresses, dateOptions, mapLocationAddress, sizeOptions, timeOptions } from '@/src/data/mock';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { useTypography } from '@/src/hooks/useTypography';
 import { useTranslation } from '@/src/i18n';
-import { ColorScheme, Radius, Spacing, Typography } from '@/src/theme';
+import { ColorScheme, Radius, Spacing } from '@/src/theme';
 import { formatCoordinates, parseLatitudeParam, parseLongitudeParam } from '@/src/utils/coordinates';
 
 const NOTES_MAX_LENGTH = 150;
@@ -17,7 +18,8 @@ const NOTES_MAX_LENGTH = 150;
 export default function PickupBookingScreen() {
   const router = useRouter();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(() => createStyles(colors, typography), [colors, typography]);
   const { t } = useTranslation();
   const { laundryId, serviceIds, selectedLocation, latitude, longitude } = useLocalSearchParams<{
     laundryId?: string;
@@ -206,7 +208,7 @@ export default function PickupBookingScreen() {
   );
 }
 
-const createStyles = (colors: ColorScheme) =>
+const createStyles = (colors: ColorScheme, typography: ReturnType<typeof useTypography>) =>
   StyleSheet.create({
     section: {
       marginBottom: Spacing.xl,
@@ -215,9 +217,10 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: 0,
     },
     sectionTitle: {
-      fontSize: Typography.subtitle.fontSize,
-      lineHeight: Typography.subtitle.lineHeight,
-      fontWeight: Typography.subtitle.fontWeight,
+      fontSize: typography.subtitle.fontSize,
+      lineHeight: typography.subtitle.lineHeight,
+      fontWeight: typography.subtitle.fontWeight,
+      fontFamily: typography.subtitle.fontFamily,
       color: colors.text,
       marginBottom: Spacing.md,
     },
@@ -247,8 +250,9 @@ const createStyles = (colors: ColorScheme) =>
       opacity: 0.7,
     },
     addAddressText: {
-      fontSize: Typography.bodyMedium.fontSize,
-      fontWeight: Typography.bodyMedium.fontWeight,
+      fontSize: typography.bodyMedium.fontSize,
+      fontWeight: typography.bodyMedium.fontWeight,
+      fontFamily: typography.bodyMedium.fontFamily,
       color: colors.primary,
     },
     counter: {
