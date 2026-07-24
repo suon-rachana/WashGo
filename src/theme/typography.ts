@@ -11,7 +11,7 @@ export { LatinFontFamily, LatinFontFamily as FontFamily, KhmerFontFamily, getFon
  * `Typography` is the original English/system-font token set — screens that
  * import it directly keep the exact same numbers as before Khmer support was
  * added. `getTypography(language)` / `useTypography()` (src/hooks/useTypography.ts)
- * return the same shape but with Noto Sans Khmer families and taller
+ * return the same shape but with Battambang families and taller
  * Khmer-only line heights swapped in for `language === 'km'`. Khmer's
  * dependent vowels and stacked consonants need more vertical room than Latin
  * at the same point size, so only `lineHeight` grows for Khmer — `fontSize`

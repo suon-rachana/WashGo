@@ -5,7 +5,7 @@ import { translations, type TranslationKey } from './translations';
 
 export type TranslationParams = Record<string, string | number>;
 
-// Khmer uses the bundled static Noto Sans Khmer weights (see src/theme/fonts.ts);
+// Khmer uses the bundled static Battambang weights (see src/theme/fonts.ts);
 // English keeps the platform's default system font.
 export function useTranslation() {
   const language = useSettingsStore((state) => state.language);

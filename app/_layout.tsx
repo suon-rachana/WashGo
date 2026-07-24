@@ -14,10 +14,10 @@ import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { useTypography } from '@/src/hooks/useTypography';
 import { useAuthStore } from '@/src/store/auth';
 import { useSettingsStore } from '@/src/store/settingsStore';
-import { NOTO_SANS_KHMER_FONTS } from '@/src/theme/fonts';
+import { BATTAMBANG_FONTS } from '@/src/theme/fonts';
 
 // Keeps the native splash screen up while the Khmer font files load, instead
-// of a flash of system-font Khmer text that then swaps to Noto Sans Khmer.
+// of a flash of system-font Khmer text that then swaps to Battambang.
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Supabase-mode only: keeps unauthenticated users out of the customer tabs
@@ -57,7 +57,7 @@ export default function RootLayout() {
   const typography = useTypography();
   const initialize = useAuthStore((state) => state.initialize);
   const isInitializing = useAuthStore((state) => state.isInitializing);
-  const [fontsLoaded, fontError] = useFonts(NOTO_SANS_KHMER_FONTS);
+  const [fontsLoaded, fontError] = useFonts(BATTAMBANG_FONTS);
 
   useEffect(() => {
     initialize();

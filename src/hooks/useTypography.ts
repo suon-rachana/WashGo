@@ -4,7 +4,7 @@ import { useSettingsStore } from '@/src/store/settingsStore';
 import { getTypography, type TypographyVariant, type TypographyVariantKey } from '@/src/theme';
 
 // Locale-aware counterpart to the static `Typography` export — resolves to
-// Noto Sans Khmer families + taller Khmer line heights when the active
+// Battambang families + taller Khmer line heights when the active
 // language is Khmer, and to the unchanged English tokens otherwise. Mirrors
 // useThemeColors()'s pattern so components read it the same way.
 export function useTypography(): Record<TypographyVariantKey, TypographyVariant> {
